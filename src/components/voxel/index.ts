@@ -10,6 +10,7 @@ import { createVoxelBodies, makeFixedStep, stepPhysics, type VoxelBody } from ".
 import { attachInput } from "./input";
 import { getMode, type ModeContext } from "./modes";
 import { applyIdle } from "./idle";
+import { watchFg } from "./theme";
 
 export type { VoxelSettings } from "./settings";
 export { DEFAULTS, load as loadSettings, save as saveSettings, SETTINGS_EVENT } from "./settings";
@@ -195,8 +196,15 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   };
   document.addEventListener(SETTINGS_EVENT, settingsListener);
 
+  const themeWatcher = watchFg((fg) => {
+    if (activeRef && "recolor" in activeRef.handle) {
+      activeRef.handle.recolor(fg);
+    }
+  });
+
   return {
     dispose() {
+      themeWatcher.dispose();
       document.removeEventListener(SETTINGS_EVENT, settingsListener);
       input.dispose();
       if (activeRef) {
