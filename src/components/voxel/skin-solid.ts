@@ -1,11 +1,12 @@
 import {
   BoxGeometry, Color, InstancedMesh, Matrix4, MeshBasicMaterial, MeshLambertMaterial,
-  Object3D, ShaderMaterial, type BufferGeometry, type Material,
+  Object3D, ShaderMaterial, Vector3, type BufferGeometry, type Material,
 } from "three";
 import type { VoxelCell } from "./voxelize";
 import type { VoxelSolidVariant } from "./settings";
 import { pageTextureVert, pageTextureFrag } from "./shaders/page-texture.glsl";
 import { crosshatchVert, crosshatchFrag } from "./shaders/crosshatch.glsl";
+import { halftoneVert, halftoneFrag } from "./shaders/halftone.glsl";
 
 export interface VoxelMesh {
   mesh: InstancedMesh;
@@ -66,6 +67,18 @@ function makeCrosshatch(fg: string): ShaderMaterial {
   });
 }
 
+function makeHalftone(fg: string): ShaderMaterial {
+  return new ShaderMaterial({
+    uniforms: {
+      uColor:      { value: new Color(fg) },
+      uLightDir:   { value: new Vector3(2, 3, 4) },
+      uDotSpacing: { value: 0.08 },
+    },
+    vertexShader: halftoneVert,
+    fragmentShader: halftoneFrag,
+  });
+}
+
 function makeMaterial(v: VoxelSolidVariant, fg: string, _voxelSize: number): Material {
   const color = new Color(fg);
   switch (v) {
@@ -73,6 +86,7 @@ function makeMaterial(v: VoxelSolidVariant, fg: string, _voxelSize: number): Mat
     case "shaded":       return new MeshLambertMaterial({ color });
     case "page-texture": return makePageTexture(fg);
     case "crosshatch":   return makeCrosshatch(fg);
+    case "halftone":     return makeHalftone(fg);
     default:             return new MeshBasicMaterial({ color });
   }
 }
