@@ -2,6 +2,7 @@
 import Base from "../layouts/Base.astro";
 import WorkshopCard from "../components/WorkshopCard.astro";
 import Footer from "../components/Footer.astro";
+import VoxelStar from "../components/VoxelStar.astro";
 import { loadContent } from "../lib/load-content";
 import { slugify, stripNumericPrefix, shortName } from "../lib/slugify";
 
@@ -33,8 +34,7 @@ const cards = hierarchy.workshops.map((w) => {
 				<p>Workshops written and built by the Spark Community</p>
 			</div>
 			<div class="logo-slot">
-				<span class="home-star" role="img" aria-label="Spark star"
-				></span>
+				<VoxelStar />
 			</div>
 		</div>
 		<hr class="home-rule" />
@@ -78,14 +78,6 @@ const cards = hierarchy.workshops.map((w) => {
 		display: grid;
 		place-items: center;
 		padding: 24px;
-	}
-	.home-star {
-		display: block;
-		width: min(100%, 360px);
-		aspect-ratio: 356 / 411;
-		background: var(--fg);
-		-webkit-mask: url("/star_monocolor.svg") center / contain no-repeat;
-		mask: url("/star_monocolor.svg") center / contain no-repeat;
 	}
 	.home-byline {
 		font-size: 21px;

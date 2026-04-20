@@ -1,0 +1,51 @@
+---
+---
+<div class="voxel-star" data-voxel-star aria-hidden="true">
+  <canvas class="voxel-canvas"></canvas>
+  <span class="voxel-star-fallback"></span>
+</div>
+
+<style>
+  @import "./voxel/voxel-star.css";
+</style>
+
+<script>
+  // Defer voxel init until idle; fallback star stays visible otherwise.
+  const VOXEL_ENABLED = true;
+
+  function bootVoxel() {
+    if (!VOXEL_ENABLED) return;
+    const host = document.querySelector<HTMLElement>("[data-voxel-star]");
+    if (!host) return;
+    const canvas = host.querySelector<HTMLCanvasElement>("canvas.voxel-canvas");
+    if (!canvas) return;
+
+    // Runtime kill-switch.
+    try {
+      if (localStorage.getItem("spark-voxel") === "off") return;
+      if (new URLSearchParams(location.search).get("voxel") === "off") return;
+    } catch {}
+
+    // Feature detect WebGL.
+    try {
+      const test = document.createElement("canvas").getContext("webgl2")
+        || document.createElement("canvas").getContext("webgl");
+      if (!test) return;
+    } catch {
+      return;
+    }
+
+    import("./voxel/index").then(({ init }) => {
+      const handle = init(canvas, {});
+      host.dataset.ready = "true";
+      window.addEventListener("beforeunload", () => handle.dispose(), { once: true });
+    });
+  }
+
+  if ("requestIdleCallback" in window) {
+    (window as unknown as { requestIdleCallback: (cb: () => void) => void })
+      .requestIdleCallback(bootVoxel);
+  } else {
+    setTimeout(bootVoxel, 200);
+  }
+</script>
