@@ -18,7 +18,7 @@ export function createScene(canvas: HTMLCanvasElement): SceneHandle {
 
   const scene = new Scene();
   const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
-  camera.position.set(3, 3, 5);
+  camera.position.set(0, 0, 5);
   camera.lookAt(0, 0, 0);
 
   const root = new Group();

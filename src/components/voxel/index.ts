@@ -2,7 +2,7 @@ import { AmbientLight, DirectionalLight, Matrix4, Object3D, Vector3 } from "thre
 import { createScene, type SceneHandle } from "./scene";
 import { applyHomeMatrices, createSolidMesh } from "./skin-solid";
 import { createFrontFaceLines, createWireframeMesh } from "./skin-wireframe";
-import { chooseDepthScale, voxelize, type VoxelCell } from "./voxelize";
+import { voxelize, type VoxelCell } from "./voxelize";
 import { distanceTransform } from "./distanceField";
 import { fetchPathD, rasterizeSvgPath } from "./rasterize";
 import { DEFAULTS, load as loadSettings, normalize, SETTINGS_EVENT, type VoxelSettings, type VoxelSkin, type VoxelVariant } from "./settings";
@@ -18,7 +18,6 @@ export { DEFAULTS, load as loadSettings, save as saveSettings, SETTINGS_EVENT } 
 export interface InitOptions {
   settings?: Partial<VoxelSettings>;
   svgUrl?: string;
-  budget?: number;
 }
 
 export interface VoxelHandle {
@@ -53,7 +52,6 @@ function forceReducedMotion(s: VoxelSettings): VoxelSettings {
 export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): VoxelHandle {
   let settings: VoxelSettings = forceReducedMotion(forceMobileSafe(normalize({ ...loadSettings(), ...options.settings })));
   const svgUrl = options.svgUrl ?? "/star_monocolor.svg";
-  const budget = options.budget ?? 400;
   const host = canvas.parentElement as HTMLElement;
 
   if (settings.variant === "liquid-glass" && !supportsWebGL2()) {
@@ -112,9 +110,7 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
 
     const { mask } = await rasterizeSvgPath(pathD, viewBox, { w: gW, h: gH });
     const dist = distanceTransform(mask, gW, gH);
-    const filled = mask.filter(Boolean).length;
-    const scale = chooseDepthScale(filled, budget);
-    cells = voxelize(mask, dist, gW, gH, { minDepth: 1, maxDepth: 6, scale });
+    cells = voxelize(mask, dist, gW, gH, { minDepth: 1, maxDepth: 1, scale: 0 });
     gridW = gW; gridH = gH;
     gridD = cells.reduce((d, c) => Math.max(d, Math.abs(c.gz) * 2 + 1), 1);
     voxelSize = 2.0 / Math.max(gW, gH);
