@@ -3,6 +3,7 @@ import type { VoxelBody } from "../physics";
 import type { InputState } from "../input";
 import type { Group } from "three";
 import type { VoxelMode } from "../settings";
+import { explodeMode } from "./explode";
 
 export interface ModeContext {
   bodies: VoxelBody[];
@@ -38,7 +39,7 @@ const ZERO = new Vector3();
 export const noForceMode: Mode = {
   force: () => ZERO,
 };
-registerMode("explode", noForceMode);
+registerMode("explode", explodeMode);
 registerMode("repel", noForceMode);
 registerMode("magnet", noForceMode);
 registerMode("tilt", noForceMode);
