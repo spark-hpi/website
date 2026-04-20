@@ -14,7 +14,7 @@ function randUnit(v: Vector3): Vector3 {
 }
 
 export const explodeMode: Mode = {
-  params: { impulseScale: 3.0, angularImpulse: 8.0 },
+  params: { impulseScale: 1.0, angularImpulse: 2.0 },
   force: () => ZERO,
   beforeStep(ctx: ModeContext) {
     if (!ctx.input.justClicked || !ctx.input.lastClickWorld) return;

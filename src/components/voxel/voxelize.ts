@@ -3,44 +3,64 @@ export interface VoxelCell {
   gy: number;
   gz: number;
   seed: number;
+  /** "interior" = fully inside the silhouette → render as one cube of voxelSize.
+   *  "boundary" = straddles the silhouette curve → render as N sub-cubes carved to the curve. */
+  kind: "interior" | "boundary";
+  /** Local XYZ offsets (one per sub-cube), in voxel-local world units. Present only for boundary cells. */
+  subOffsets?: Float32Array;
 }
 
 export interface VoxelizeOptions {
-  minDepth: number;
-  maxDepth: number;
-  scale: number;
-}
-
-export function voxelize(
-  mask: boolean[],
-  dist: Float32Array,
-  w: number,
-  h: number,
-  opts: VoxelizeOptions,
-): VoxelCell[] {
-  const out: VoxelCell[] = [];
-  let seed = 0;
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const i = y * w + x;
-      if (!mask[i]) continue;
-      const raw = opts.scale === 0 ? opts.minDepth : Math.round(1 + dist[i] * opts.scale);
-      const depth = Math.max(opts.minDepth, Math.min(opts.maxDepth, raw));
-      const zStart = -Math.floor(depth / 2);
-      for (let k = 0; k < depth; k++) {
-        out.push({ gx: x, gy: y, gz: zStart + k, seed: seed++ });
-      }
-    }
-  }
-  return out;
+  voxelSize: number;
+  /** Sub-samples per cell side; edge cells emit one sub-cube per filled sub-pixel. */
+  sub: number;
 }
 
 /**
- * Given the total voxel count budget, choose a distance-field scale.
- * Larger scale → more Z extrusion → more voxels.
+ * Classify each coarse cell as interior / boundary / exterior by super-sampling `fineMask`
+ * at `sub × sub` sub-pixels per cell. Interior cells emit one full-size voxel. Boundary cells
+ * emit a list of sub-cube local offsets, one per filled sub-pixel, so the rendered shape
+ * matches the SVG curve inside the cell.
  */
-export function chooseDepthScale(filledCount: number, budget: number): number {
-  if (filledCount === 0) return 0;
-  const avgDepth = Math.max(1, Math.min(4, budget / filledCount));
-  return (avgDepth - 1) / 2;
+export function voxelize(
+  fineMask: boolean[],
+  gW: number,
+  gH: number,
+  opts: VoxelizeOptions,
+): VoxelCell[] {
+  const SUB = opts.sub;
+  const fineW = gW * SUB;
+  const vs = opts.voxelSize;
+  const total = SUB * SUB;
+  const out: VoxelCell[] = [];
+  let seed = 0;
+
+  for (let y = 0; y < gH; y++) {
+    for (let x = 0; x < gW; x++) {
+      const filled: number[] = [];
+      for (let sy = 0; sy < SUB; sy++) {
+        const fy = y * SUB + sy;
+        for (let sx = 0; sx < SUB; sx++) {
+          const fx = x * SUB + sx;
+          if (fineMask[fy * fineW + fx]) filled.push(sy * SUB + sx);
+        }
+      }
+      if (filled.length === 0) continue;
+      if (filled.length === total) {
+        out.push({ gx: x, gy: y, gz: 0, seed: seed++, kind: "interior" });
+        continue;
+      }
+      const subOffsets = new Float32Array(filled.length * 3);
+      for (let k = 0; k < filled.length; k++) {
+        const i = filled[k];
+        const sx = i % SUB;
+        const sy = (i - sx) / SUB;
+        subOffsets[k * 3 + 0] = ((sx + 0.5) / SUB - 0.5) * vs;
+        subOffsets[k * 3 + 1] = (0.5 - (sy + 0.5) / SUB) * vs;
+        subOffsets[k * 3 + 2] = 0;
+      }
+      out.push({ gx: x, gy: y, gz: 0, seed: seed++, kind: "boundary", subOffsets });
+    }
+  }
+  return out;
 }

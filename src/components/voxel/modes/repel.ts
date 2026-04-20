@@ -4,7 +4,7 @@ import type { Mode, ModeContext } from "./index";
 const _out = new Vector3();
 
 export const repelMode: Mode = {
-  params: { strength: 90, radius: 0.45 },
+  params: { strength: 30, radius: 0.45 },
   force(b, ctx: ModeContext) {
     _out.set(0, 0, 0);
     const cursor = ctx.input.cursorWorld;

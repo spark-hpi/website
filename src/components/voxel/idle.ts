@@ -1,9 +1,7 @@
 import type { Group } from "three";
-import { Vector3 } from "three";
 import type { VoxelBody } from "./physics";
 import type { VoxelIdle } from "./settings";
-
-const _scratch = new Vector3();
+import { Vector3 } from "three";
 
 export interface IdleParams {
   bodies: VoxelBody[];
@@ -14,33 +12,30 @@ export interface IdleParams {
   t: number;
 }
 
+// Directional wavefront — mostly horizontal, slightly tilted, like wind-driven water.
+const WAVE_DIR_X = 0.94;
+const WAVE_DIR_Y = 0.34;
+
 export function applyIdle(kind: VoxelIdle, p: IdleParams): void {
+  // Idles never spin the group now, but keep the guard so stale rotations clear.
+  p.root.rotation.set(0, 0, 0);
+
   switch (kind) {
     case "still":
       for (let i = 0; i < p.bodies.length; i++) p.bodies[i].home.copy(p.homes[i]);
       break;
-    case "rotate":
-      for (let i = 0; i < p.bodies.length; i++) p.bodies[i].home.copy(p.homes[i]);
-      p.root.rotation.y += 0.006;
-      break;
     case "breathe": {
-      const a = Math.sin(p.t * 0.4) * 0.03 * p.voxelSize;
+      // Travelling wave across the star. Voxels heave up (y) and plunge toward/away
+      // from camera (z) so you see crests roll through like real water.
+      const speed = 3.2;
+      const k = 4.5;                   // spatial frequency
+      const ampY = 0.6 * p.voxelSize;  // vertical heave — strong
+      const ampZ = 0.8 * p.voxelSize;  // depth bob — strong
       for (let i = 0; i < p.bodies.length; i++) {
         const h = p.homes[i];
-        const n = h.length() || 1;
-        _scratch.copy(h).multiplyScalar(1 + a / n);
-        p.bodies[i].home.copy(_scratch);
-      }
-      break;
-    }
-    case "drift": {
-      const amp = 0.015 * p.voxelSize;
-      for (let i = 0; i < p.bodies.length; i++) {
-        const s = p.seeds[i];
-        const ox = Math.sin(p.t * 0.7 + s * 0.13) * amp;
-        const oy = Math.sin(p.t * 0.9 + s * 0.27) * amp;
-        const oz = Math.sin(p.t * 0.6 + s * 0.41) * amp;
-        p.bodies[i].home.set(p.homes[i].x + ox, p.homes[i].y + oy, p.homes[i].z + oz);
+        const phase = p.t * speed - (h.x * WAVE_DIR_X + h.y * WAVE_DIR_Y) * k;
+        const s = Math.sin(phase);
+        p.bodies[i].home.set(h.x, h.y + s * ampY, h.z + s * ampZ);
       }
       break;
     }

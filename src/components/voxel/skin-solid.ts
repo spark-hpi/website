@@ -1,39 +1,37 @@
 import {
-  BoxGeometry, Color, InstancedMesh, Matrix4, MeshBasicMaterial, MeshLambertMaterial,
-  MeshPhysicalMaterial, Object3D, ShaderMaterial, Vector3, type BufferGeometry, type Material,
+  BoxGeometry, Color, InstancedMesh, Matrix4, MeshLambertMaterial,
+  MeshPhysicalMaterial, Object3D, type BufferGeometry, type Material,
 } from "three";
 import type { VoxelCell } from "./voxelize";
-import type { VoxelSolidVariant } from "./settings";
-import { pageTextureVert, pageTextureFrag } from "./shaders/page-texture.glsl";
-import { crosshatchVert, crosshatchFrag } from "./shaders/crosshatch.glsl";
-import { halftoneVert, halftoneFrag } from "./shaders/halftone.glsl";
+import type { VoxelVariant } from "./settings";
 
 export interface VoxelMesh {
   mesh: InstancedMesh;
   dispose(): void;
-  setVariant(v: VoxelSolidVariant): void;
+  setVariant(v: VoxelVariant): void;
   recolor(fg: string): void;
 }
 
-export function createSolidMesh(cells: VoxelCell[], voxelSize: number, variant: VoxelSolidVariant, fg: string): VoxelMesh {
+export function createSolidMesh(count: number, voxelSize: number, variant: VoxelVariant, fg: string): VoxelMesh {
   const geometry: BufferGeometry = new BoxGeometry(voxelSize, voxelSize, voxelSize);
+  let activeVariant = variant;
   let material: Material = makeMaterial(variant, fg, voxelSize);
-  const mesh = new InstancedMesh(geometry, material, cells.length);
-  mesh.count = cells.length;
+  const mesh = new InstancedMesh(geometry, material, Math.max(1, count));
+  mesh.count = count;
 
   return {
     mesh,
     setVariant(v) {
       material.dispose();
       material = makeMaterial(v, fg, voxelSize);
+      activeVariant = v;
       mesh.material = material;
     },
     recolor(c) {
-      if (material instanceof ShaderMaterial) {
-        const u = material.uniforms.uColor;
-        if (u && u.value && typeof u.value.set === "function") u.value.set(c);
-      } else if ("color" in material && (material as MeshBasicMaterial).color) {
-        (material as MeshBasicMaterial).color.set(c);
+      // Liquid glass must stay colorless — tinting it with --fg kills the refraction look.
+      if (activeVariant === "liquid-glass") return;
+      if ("color" in material && (material as MeshLambertMaterial).color) {
+        (material as MeshLambertMaterial).color.set(c);
       }
     },
     dispose() {
@@ -43,75 +41,47 @@ export function createSolidMesh(cells: VoxelCell[], voxelSize: number, variant: 
   };
 }
 
-function makePageTexture(fg: string): ShaderMaterial {
-  return new ShaderMaterial({
-    uniforms: {
-      uColor:       { value: new Color(fg) },
-      uLineSpacing: { value: 0.18 },
-      uLineWidth:   { value: 0.06 },
-    },
-    vertexShader: pageTextureVert,
-    fragmentShader: pageTextureFrag,
-  });
-}
-
-function makeCrosshatch(fg: string): ShaderMaterial {
-  return new ShaderMaterial({
-    uniforms: {
-      uColor:   { value: new Color(fg) },
-      uSpacing: { value: 0.12 },
-      uWidth:   { value: 0.04 },
-    },
-    vertexShader: crosshatchVert,
-    fragmentShader: crosshatchFrag,
-  });
-}
-
-// NOTE: page-level backdrop capture is omitted; transmission applies only
-// between voxels (voxel-to-voxel refraction). True backdrop sampling would
-// require html2canvas or a snapshot canvas layer and is deferred.
-function makeLiquidGlass(fg: string, voxelSize: number): MeshPhysicalMaterial {
-  return new MeshPhysicalMaterial({
-    color: new Color(fg),
+function makeLiquidGlass(_fg: string, voxelSize: number): MeshPhysicalMaterial {
+  // Real glass recipe: colorless, ior ~1.5, full transmission, very low roughness,
+  // a clearcoat to add sharp specular highlights, and — crucially — heavy
+  // dispersion so each voxel splits light into a rainbow like a miniature prism.
+  // The scene MUST have `scene.environment` set (RoomEnvironment PMREM), otherwise
+  // transmission samples nothing and the material renders black.
+  const m = new MeshPhysicalMaterial({
+    color: 0xffffff,
     transmission: 1,
-    thickness: voxelSize * 1.5,
-    ior: 1.45,
-    roughness: 0.05,
-    opacity: 0.15,
-    transparent: true,
+    thickness: voxelSize * 2.5,
+    ior: 1.52,
+    roughness: 0.02,
     metalness: 0,
+    attenuationColor: 0xffffff,
+    attenuationDistance: 2.0,
+    clearcoat: 1,
+    clearcoatRoughness: 0.02,
+    specularIntensity: 1,
+    envMapIntensity: 1.4,
+    transparent: true,
+    opacity: 1,
   });
+  // Dispersion (Three r160+) fans the transmission lobe across the visible spectrum —
+  // this is what produces the rainbow edges on refracted light.
+  (m as unknown as { dispersion: number }).dispersion = 5.5;
+  return m;
 }
 
-function makeHalftone(fg: string): ShaderMaterial {
-  return new ShaderMaterial({
-    uniforms: {
-      uColor:      { value: new Color(fg) },
-      uLightDir:   { value: new Vector3(2, 3, 4) },
-      uDotSpacing: { value: 0.08 },
-    },
-    vertexShader: halftoneVert,
-    fragmentShader: halftoneFrag,
-  });
-}
-
-function makeMaterial(v: VoxelSolidVariant, fg: string, voxelSize: number): Material {
+function makeMaterial(v: VoxelVariant, fg: string, voxelSize: number): Material {
   const color = new Color(fg);
   switch (v) {
-    case "flat":         return new MeshBasicMaterial({ color });
-    case "shaded":       return new MeshLambertMaterial({ color });
-    case "page-texture": return makePageTexture(fg);
-    case "crosshatch":   return makeCrosshatch(fg);
-    case "halftone":     return makeHalftone(fg);
     case "liquid-glass": return makeLiquidGlass(fg, voxelSize);
-    default:             return new MeshBasicMaterial({ color });
+    case "solid":
+    default:             return new MeshLambertMaterial({ color });
   }
 }
 
 /**
  * Apply per-voxel home matrices in one pass.
  */
-export function applyHomeMatrices(mesh: InstancedMesh, cells: VoxelCell[], voxelSize: number, gridW: number, gridH: number, gridD: number): void {
+export function applyHomeMatrices(mesh: InstancedMesh, cells: VoxelCell[], voxelSize: number, gridW: number, gridH: number, _gridD: number): void {
   const dummy = new Object3D();
   const m = new Matrix4();
   for (let i = 0; i < cells.length; i++) {

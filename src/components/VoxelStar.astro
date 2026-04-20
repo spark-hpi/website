@@ -10,7 +10,6 @@
 </style>
 
 <script>
-  // Defer voxel init until idle; fallback star stays visible otherwise.
   const VOXEL_ENABLED = true;
 
   function bootVoxel() {
@@ -20,13 +19,11 @@
     const canvas = host.querySelector<HTMLCanvasElement>("canvas.voxel-canvas");
     if (!canvas) return;
 
-    // Runtime kill-switch.
     try {
       if (localStorage.getItem("spark-voxel") === "off") return;
       if (new URLSearchParams(location.search).get("voxel") === "off") return;
     } catch {}
 
-    // Feature detect WebGL on the real canvas (idempotent: init() can reuse it).
     try {
       const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
       if (!gl) return;

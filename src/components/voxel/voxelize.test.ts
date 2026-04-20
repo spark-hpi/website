@@ -1,37 +1,54 @@
 import { describe, it, expect } from "vitest";
 import { voxelize } from "./voxelize";
 
+function makeFineMask(gW: number, gH: number, SUB: number, pred: (x: number, y: number) => boolean): boolean[] {
+  const fw = gW * SUB, fh = gH * SUB;
+  const mask = new Array<boolean>(fw * fh).fill(false);
+  for (let y = 0; y < fh; y++) for (let x = 0; x < fw; x++) mask[y * fw + x] = pred(x, y);
+  return mask;
+}
+
 describe("voxelize", () => {
-  it("produces one voxel per filled cell when depth is 1 everywhere", () => {
-    const mask = [true, true, false, true];
-    const dist = new Float32Array([0.1, 0.1, 0, 0.1]);
-    const voxels = voxelize(mask, dist, 2, 2, { minDepth: 1, maxDepth: 1, scale: 0 });
-    expect(voxels).toHaveLength(3);
+  it("marks a fully-filled 2×2 grid as interior cells", () => {
+    const SUB = 4;
+    const fine = makeFineMask(2, 2, SUB, () => true);
+    const cells = voxelize(fine, 2, 2, { voxelSize: 1, sub: SUB });
+    expect(cells).toHaveLength(4);
+    for (const c of cells) expect(c.kind).toBe("interior");
   });
 
-  it("center of a large mask gets maximum depth", () => {
-    const w = 5, h = 5;
-    const mask = new Array(w * h).fill(true);
-    const dist = new Float32Array(w * h);
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-      dist[y * w + x] = Math.min(x, y, w - 1 - x, h - 1 - y) + 1;
+  it("marks cells that are half-filled at sub-pixel level as boundary", () => {
+    const SUB = 4;
+    // Fill only the left half of a 2×1 grid → cell (0,0) fully filled, (1,0) empty
+    //   and then split cell (0,0) so only half of its sub-pixels are filled.
+    const fine = makeFineMask(1, 1, SUB, (x) => x < SUB / 2);
+    const cells = voxelize(fine, 1, 1, { voxelSize: 1, sub: SUB });
+    expect(cells).toHaveLength(1);
+    const [c] = cells;
+    expect(c.kind).toBe("boundary");
+    expect(c.subOffsets).toBeDefined();
+    expect(c.subOffsets!.length).toBe(3 * (SUB * SUB) / 2);
+  });
+
+  it("skips completely empty cells", () => {
+    const SUB = 4;
+    const fine = makeFineMask(2, 2, SUB, (x, y) => x < SUB && y < SUB); // only cell (0,0) filled
+    const cells = voxelize(fine, 2, 2, { voxelSize: 1, sub: SUB });
+    expect(cells).toHaveLength(1);
+    expect(cells[0].gx).toBe(0);
+    expect(cells[0].gy).toBe(0);
+  });
+
+  it("sub-offsets are within ±voxelSize/2", () => {
+    const SUB = 4;
+    const fine = makeFineMask(1, 1, SUB, (x, y) => (x + y) % 2 === 0);
+    const cells = voxelize(fine, 1, 1, { voxelSize: 1, sub: SUB });
+    expect(cells[0].kind).toBe("boundary");
+    const offs = cells[0].subOffsets!;
+    for (let i = 0; i < offs.length; i += 3) {
+      expect(Math.abs(offs[i])).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(offs[i + 1])).toBeLessThanOrEqual(0.5);
+      expect(offs[i + 2]).toBe(0);
     }
-    const voxels = voxelize(mask, dist, w, h, { minDepth: 1, maxDepth: 6, scale: 1 });
-    const center = voxels.filter((v) => v.gx === 2 && v.gy === 2);
-    const corner = voxels.filter((v) => v.gx === 0 && v.gy === 0);
-    expect(center.length).toBeGreaterThan(corner.length);
-    expect(center.length).toBeLessThanOrEqual(6);
-  });
-
-  it("positions are centered on origin", () => {
-    const mask = [true, true, true, true];
-    const dist = new Float32Array([0.5, 0.5, 0.5, 0.5]);
-    const voxels = voxelize(mask, dist, 2, 2, { minDepth: 1, maxDepth: 1, scale: 0 });
-    const xs = voxels.map((v) => v.gx);
-    const ys = voxels.map((v) => v.gy);
-    expect(Math.min(...xs)).toBe(0);
-    expect(Math.max(...xs)).toBe(1);
-    expect(Math.min(...ys)).toBe(0);
-    expect(Math.max(...ys)).toBe(1);
   });
 });

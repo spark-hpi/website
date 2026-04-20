@@ -1,14 +1,19 @@
-import { AmbientLight, DirectionalLight, Matrix4, Object3D, Vector3 } from "three";
-import { createScene, type SceneHandle } from "./scene";
-import { applyHomeMatrices, createSolidMesh } from "./skin-solid";
-import { createFrontFaceLines, createWireframeMesh } from "./skin-wireframe";
+import { AmbientLight, DirectionalLight, Euler, InstancedMesh, Matrix4, Object3D, Quaternion, Vector3 } from "three";
+import { createScene } from "./scene";
+import { createSolidMesh } from "./skin-solid";
+import { createLiquidStar, type LiquidHandle } from "./skin-liquid";
 import { voxelize, type VoxelCell } from "./voxelize";
-import { distanceTransform } from "./distanceField";
 import { fetchPathD, rasterizeSvgPath } from "./rasterize";
-import { DEFAULTS, load as loadSettings, normalize, SETTINGS_EVENT, type VoxelSettings, type VoxelSkin, type VoxelVariant } from "./settings";
+import { DEFAULTS, load as loadSettings, normalize, SETTINGS_EVENT, type VoxelSettings, type VoxelVariant, type VoxelEdge } from "./settings";
 import { createVoxelBodies, makeFixedStep, stepPhysics, type VoxelBody } from "./physics";
 import { attachInput } from "./input";
 import { getMode, type ModeContext } from "./modes";
+import { explodeMode } from "./modes/explode";
+import { repelMode } from "./modes/repel";
+import { magnetMode } from "./modes/magnet";
+import { swirlMode } from "./modes/swirl";
+import { tiltMode } from "./modes/tilt";
+import { gravityMode } from "./modes/gravity";
 import { applyIdle } from "./idle";
 import { watchFg } from "./theme";
 
@@ -24,9 +29,17 @@ export interface VoxelHandle {
   dispose(): void;
 }
 
+const SUB = 8;
+
+interface SolidHandle {
+  mesh: InstancedMesh;
+  dispose(): void;
+  recolor(c: string): void;
+}
+
 type ActiveSkin =
-  | { kind: "instanced"; handle: { mesh: import("three").InstancedMesh; dispose(): void; recolor(c: string): void } }
-  | { kind: "lines"; handle: import("./skin-wireframe").FrontFaceLines };
+  | { kind: "voxels"; interior: SolidHandle; boundary: SolidHandle | null }
+  | { kind: "liquid"; handle: LiquidHandle };
 
 function supportsWebGL2(): boolean {
   try {
@@ -49,14 +62,27 @@ function forceReducedMotion(s: VoxelSettings): VoxelSettings {
   return s;
 }
 
+function applyTuning(s: VoxelSettings): void {
+  const k = s.strength;
+  explodeMode.params!.impulseScale   = 1.0 * k;
+  explodeMode.params!.angularImpulse = 2.0 * k;
+  repelMode.params!.strength         = 30  * k;
+  magnetMode.params!.strength        = 60  * k;
+  swirlMode.params!.strength         = 40  * k;
+  tiltMode.params!.maxTiltY          = 0.6 * k;
+  tiltMode.params!.maxTiltX          = 0.4 * k;
+  gravityMode.params!.g              = s.gravity;
+  gravityMode.params!.globalK        = s.stiffness;
+}
+
 export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): VoxelHandle {
   let settings: VoxelSettings = forceReducedMotion(forceMobileSafe(normalize({ ...loadSettings(), ...options.settings })));
   const svgUrl = options.svgUrl ?? "/star_monocolor.svg";
   const host = canvas.parentElement as HTMLElement;
 
   if (settings.variant === "liquid-glass" && !supportsWebGL2()) {
-    console.warn("[voxel] liquid-glass requires WebGL2; falling back to shaded");
-    settings.variant = "shaded";
+    console.warn("[voxel] liquid-glass requires WebGL2; falling back to solid");
+    settings.variant = "solid";
   }
 
   const scene = createScene(canvas);
@@ -70,29 +96,65 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   const input = attachInput(canvas, scene.camera);
   let currentMode: import("./settings").VoxelMode = settings.mode;
 
+  let pathD = "";
+  let viewBox = { w: 1, h: 1 };
+
   let cells: VoxelCell[] = [];
-  let gridW = 0, gridH = 0, gridD = 0;
+  let gridW = 0, gridH = 0;
   let voxelSize = 0;
   let activeRef: ActiveSkin | null = null;
-  let activeSkin: VoxelSkin = settings.skin;
   let activeVariant: VoxelVariant = settings.variant;
-  let posBuffer: Float32Array | null = null;
+  let activeResolution = settings.resolution;
+  let activeEdge: VoxelEdge = settings.edge;
   let bodies: VoxelBody[] = [];
   let baseHomes: Vector3[] = [];
   let seeds: number[] = [];
+
+  let interiorBody: Uint32Array = new Uint32Array(0);
+  let boundaryBody: Uint32Array = new Uint32Array(0);
+  let boundaryLocal: Float32Array = new Float32Array(0);
+
   let t = 0;
-  const ZERO = new Vector3();
-  const noForce = () => ZERO;
   const fixedStep = makeFixedStep(1 / 60);
 
-  function buildActive(): ActiveSkin {
+  applyTuning(settings);
+
+  function buildVoxelSkin(): { interior: SolidHandle; boundary: SolidHandle | null } {
     const fg = getComputedStyle(document.documentElement).getPropertyValue("--fg").trim() || "#11053b";
-    if (settings.skin === "wireframe" && settings.variant === "front-face") {
-      return { kind: "lines", handle: createFrontFaceLines(cells, voxelSize, fg) };
-    } else if (settings.skin === "wireframe") {
-      return { kind: "instanced", handle: createWireframeMesh(cells, voxelSize, settings.variant as import("./settings").VoxelWireframeVariant, fg) };
+    const carved = settings.edge === "carved";
+    const interiorCount = carved ? interiorBody.length : cells.length;
+    const boundaryCount = carved ? boundaryBody.length : 0;
+    const subSize = voxelSize / SUB;
+
+    const interior = createSolidMesh(interiorCount, voxelSize, settings.variant, fg);
+    const boundary = boundaryCount > 0
+      ? createSolidMesh(boundaryCount, subSize, settings.variant, fg)
+      : null;
+    return { interior, boundary };
+  }
+
+  function attachActive(a: ActiveSkin) {
+    if (a.kind === "voxels") {
+      scene.root.add(a.interior.mesh);
+      if (a.boundary) scene.root.add(a.boundary.mesh);
     } else {
-      return { kind: "instanced", handle: createSolidMesh(cells, voxelSize, settings.variant as import("./settings").VoxelSolidVariant, fg) };
+      scene.root.add(a.handle.group);
+    }
+  }
+  function detachActive(a: ActiveSkin) {
+    if (a.kind === "voxels") {
+      scene.root.remove(a.interior.mesh);
+      if (a.boundary) scene.root.remove(a.boundary.mesh);
+    } else {
+      scene.root.remove(a.handle.group);
+    }
+  }
+  function disposeActive(a: ActiveSkin) {
+    if (a.kind === "voxels") {
+      a.interior.dispose();
+      a.boundary?.dispose();
+    } else {
+      a.handle.dispose();
     }
   }
 
@@ -100,63 +162,154 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
     return { bodies, input: input.state, root: scene.root, dt, voxelSize };
   }
 
-  (async () => {
-    const { pathD, viewBox } = await fetchPathD(svgUrl);
-    const rect = canvas.getBoundingClientRect();
-    const res = Math.max(10, Math.min(28, Math.round(Math.max(rect.width, 1) / 14)));
+  async function rebuildVoxels(res: number, edge: VoxelEdge): Promise<void> {
+    if (!pathD) {
+      const p = await fetchPathD(svgUrl);
+      pathD = p.pathD;
+      viewBox = p.viewBox;
+    }
     const ratio = viewBox.h / viewBox.w;
     const gW = res;
     const gH = Math.max(1, Math.round(res * ratio));
 
-    const { mask } = await rasterizeSvgPath(pathD, viewBox, { w: gW, h: gH });
-    const dist = distanceTransform(mask, gW, gH);
-    cells = voxelize(mask, dist, gW, gH, { minDepth: 1, maxDepth: 1, scale: 0 });
-    gridW = gW; gridH = gH;
-    gridD = cells.reduce((d, c) => Math.max(d, Math.abs(c.gz) * 2 + 1), 1);
-    voxelSize = 2.0 / Math.max(gW, gH);
+    const fineW = gW * SUB;
+    const fineH = gH * SUB;
+    const { mask: fineMask } = await rasterizeSvgPath(pathD, viewBox, { w: fineW, h: fineH });
 
-    const homes = cells.map((c) => new Vector3(
+    const vs = 2.0 / Math.max(gW, gH);
+    cells = voxelize(fineMask, gW, gH, { voxelSize: vs, sub: SUB });
+
+    gridW = gW; gridH = gH;
+    voxelSize = vs;
+
+    baseHomes = cells.map((c) => new Vector3(
       (c.gx - gridW / 2 + 0.5) * voxelSize,
       (gridH / 2 - c.gy - 0.5) * voxelSize,
       (c.gz) * voxelSize,
     ));
-    baseHomes = homes;
     seeds = cells.map((c) => c.seed);
-    bodies = createVoxelBodies(homes);
+    bodies = createVoxelBodies(baseHomes);
 
-    activeRef = buildActive();
-    if (activeRef.kind === "instanced") {
-      applyHomeMatrices(activeRef.handle.mesh, cells, voxelSize, gridW, gridH, gridD);
-      scene.root.add(activeRef.handle.mesh);
-    } else {
-      scene.root.add(activeRef.handle.object);
+    const carved = edge === "carved";
+    const interiorIdx: number[] = [];
+    const boundaryCellOf: number[] = [];
+    const boundaryOffsets: number[] = [];
+    for (let i = 0; i < cells.length; i++) {
+      const c = cells[i];
+      if (!carved || c.kind === "interior") {
+        interiorIdx.push(i);
+      } else if (c.subOffsets) {
+        const n = c.subOffsets.length / 3;
+        for (let k = 0; k < n; k++) {
+          boundaryCellOf.push(i);
+          boundaryOffsets.push(
+            c.subOffsets[k * 3 + 0],
+            c.subOffsets[k * 3 + 1],
+            c.subOffsets[k * 3 + 2],
+          );
+        }
+      } else {
+        interiorIdx.push(i);
+      }
     }
-    activeSkin = settings.skin;
+    interiorBody = Uint32Array.from(interiorIdx);
+    boundaryBody = Uint32Array.from(boundaryCellOf);
+    boundaryLocal = Float32Array.from(boundaryOffsets);
+
+    const { interior, boundary } = buildVoxelSkin();
+    const next: ActiveSkin = { kind: "voxels", interior, boundary };
+    if (activeRef) {
+      detachActive(activeRef);
+      disposeActive(activeRef);
+    }
+    activeRef = next;
+    attachActive(next);
+
     activeVariant = settings.variant;
-    posBuffer = new Float32Array(cells.length * 3);
-  })();
+    activeResolution = res;
+    activeEdge = edge;
+  }
+
+  async function rebuildLiquid(): Promise<void> {
+    const liquid = await createLiquidStar(svgUrl, 2.0);
+    const next: ActiveSkin = { kind: "liquid", handle: liquid };
+    if (activeRef) {
+      detachActive(activeRef);
+      disposeActive(activeRef);
+    }
+    activeRef = next;
+    attachActive(next);
+    activeVariant = settings.variant;
+    // Clear voxel state so a later swap back to voxels triggers full rebuild.
+    bodies = [];
+    cells = [];
+  }
+
+  async function rebuildForCurrentVariant(): Promise<void> {
+    if (settings.variant === "liquid-glass") {
+      await rebuildLiquid();
+    } else {
+      await rebuildVoxels(settings.resolution, settings.edge);
+    }
+  }
+
+  void rebuildForCurrentVariant();
+
+  const _tmp = new Object3D();
+  const _bodyMat = new Matrix4();
+  const _subMat = new Matrix4();
+  const _finalMat = new Matrix4();
+  const _quat = new Quaternion();
+  const _euler = new Euler();
+  const _one = new Vector3(1, 1, 1);
+  const _pos = new Vector3();
 
   const frameCb = (dt: number) => {
+    t += dt;
     if (!activeRef) return;
+
+    if (activeRef.kind === "liquid") {
+      activeRef.handle.update(t, settings.idle === "breathe");
+      return;
+    }
+
     const active = activeRef;
     const ctx: ModeContext = buildCtx(dt);
-    t += dt;
     applyIdle(settings.idle, { bodies, homes: baseHomes, seeds, voxelSize, root: scene.root, t });
     const mode = getMode(currentMode);
     mode.beforeStep?.(ctx);
     fixedStep(dt, () => {
-      stepPhysics(bodies, 1 / 60, (b) => mode.force(b, ctx), { k: 40, c: 6 });
+      stepPhysics(bodies, 1 / 60, (b) => mode.force(b, ctx), {
+        k: settings.stiffness,
+        c: settings.damping,
+        mass: settings.mass,
+      });
     });
     input.endFrame();
-    if (active.kind === "instanced") {
-      writeMatrices(active.handle.mesh, bodies);
-    } else if (posBuffer) {
-      for (let i = 0; i < bodies.length; i++) {
-        posBuffer[i * 3 + 0] = bodies[i].pos.x;
-        posBuffer[i * 3 + 1] = bodies[i].pos.y;
-        posBuffer[i * 3 + 2] = bodies[i].pos.z;
+
+    const im = active.interior.mesh;
+    for (let i = 0; i < interiorBody.length; i++) {
+      const b = bodies[interiorBody[i]];
+      _tmp.position.copy(b.pos);
+      _tmp.rotation.set(b.rot.x, b.rot.y, b.rot.z);
+      _tmp.updateMatrix();
+      im.setMatrixAt(i, _tmp.matrix);
+    }
+    im.instanceMatrix.needsUpdate = true;
+
+    if (active.boundary) {
+      const bm = active.boundary.mesh;
+      for (let i = 0; i < boundaryBody.length; i++) {
+        const b = bodies[boundaryBody[i]];
+        _euler.set(b.rot.x, b.rot.y, b.rot.z);
+        _quat.setFromEuler(_euler);
+        _bodyMat.compose(b.pos, _quat, _one);
+        _pos.set(boundaryLocal[i * 3 + 0], boundaryLocal[i * 3 + 1], boundaryLocal[i * 3 + 2]);
+        _subMat.makeTranslation(_pos.x, _pos.y, _pos.z);
+        _finalMat.multiplyMatrices(_bodyMat, _subMat);
+        bm.setMatrixAt(i, _finalMat);
       }
-      active.handle.update(cells, posBuffer);
+      bm.instanceMatrix.needsUpdate = true;
     }
   };
 
@@ -164,8 +317,10 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
 
   function applySettings(next: VoxelSettings) {
     const oldMode = currentMode;
+    const prevVariant = settings.variant;
     settings = next;
     currentMode = next.mode;
+    applyTuning(next);
 
     if (next.enabled === false) {
       canvas.style.display = "none";
@@ -184,19 +339,22 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
       getMode(next.mode).onEnter?.(ctx);
     }
 
-    if (activeRef && (activeSkin !== next.skin || activeVariant !== next.variant)) {
-      if (activeRef.kind === "instanced") scene.root.remove(activeRef.handle.mesh);
-      else                                scene.root.remove(activeRef.handle.object);
-      activeRef.handle.dispose();
-      activeRef = buildActive();
-      if (activeRef.kind === "instanced") {
-        applyHomeMatrices(activeRef.handle.mesh, cells, voxelSize, gridW, gridH, gridD);
-        scene.root.add(activeRef.handle.mesh);
-      } else {
-        scene.root.add(activeRef.handle.object);
+    // Variant flip: full rebuild onto the other pipeline.
+    if (next.variant !== prevVariant) {
+      void rebuildForCurrentVariant();
+      return;
+    }
+
+    // Voxel-only knobs.
+    if (settings.variant === "solid") {
+      const gridDirty = next.resolution !== activeResolution || next.edge !== activeEdge;
+      if (gridDirty) {
+        void rebuildVoxels(next.resolution, next.edge);
+        return;
       }
-      activeSkin = next.skin;
-      activeVariant = next.variant;
+      if (activeRef?.kind === "voxels" && activeVariant !== next.variant) {
+        // Same-family variant change (only "solid" in voxel family right now, so no-op).
+      }
     }
   }
 
@@ -207,7 +365,11 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   document.addEventListener(SETTINGS_EVENT, settingsListener);
 
   const themeWatcher = watchFg((fg) => {
-    if (activeRef && "recolor" in activeRef.handle) {
+    if (!activeRef) return;
+    if (activeRef.kind === "voxels") {
+      activeRef.interior.recolor(fg);
+      activeRef.boundary?.recolor(fg);
+    } else {
       activeRef.handle.recolor(fg);
     }
   });
@@ -218,25 +380,10 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
       document.removeEventListener(SETTINGS_EVENT, settingsListener);
       input.dispose();
       if (activeRef) {
-        if (activeRef.kind === "instanced") {
-          scene.root.remove(activeRef.handle.mesh);
-        } else {
-          scene.root.remove(activeRef.handle.object);
-        }
-        activeRef.handle.dispose();
+        detachActive(activeRef);
+        disposeActive(activeRef);
       }
       scene.dispose();
     },
   };
-}
-
-const _tmp = new Object3D();
-function writeMatrices(m: import("three").InstancedMesh, bs: VoxelBody[]) {
-  for (let i = 0; i < bs.length; i++) {
-    _tmp.position.copy(bs[i].pos);
-    _tmp.rotation.set(bs[i].rot.x, bs[i].rot.y, bs[i].rot.z);
-    _tmp.updateMatrix();
-    m.setMatrixAt(i, _tmp.matrix);
-  }
-  m.instanceMatrix.needsUpdate = true;
 }

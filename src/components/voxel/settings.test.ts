@@ -18,9 +18,8 @@ describe("settings", () => {
 
   it("DEFAULTS has the expected shape", () => {
     expect(DEFAULTS.enabled).toBe(true);
-    expect(DEFAULTS.mode).toBe("explode");
-    expect(DEFAULTS.skin).toBe("wireframe");
-    expect(DEFAULTS.variant).toBe("corner-dots");
+    expect(DEFAULTS.mode).toBe("repel");
+    expect(DEFAULTS.variant).toBe("solid");
     expect(DEFAULTS.idle).toBe("breathe");
   });
 
@@ -29,7 +28,7 @@ describe("settings", () => {
   });
 
   it("save then load round-trips", () => {
-    const s: VoxelSettings = { ...DEFAULTS, mode: "repel", idle: "drift" };
+    const s: VoxelSettings = { ...DEFAULTS, mode: "tilt", idle: "still" };
     save(s);
     expect(load()).toEqual(s);
   });
@@ -43,7 +42,7 @@ describe("settings", () => {
     const partial = { mode: "tilt" as const };
     const full = normalize(partial);
     expect(full.mode).toBe("tilt");
-    expect(full.skin).toBe(DEFAULTS.skin);
+    expect(full.variant).toBe(DEFAULTS.variant);
     expect(full.enabled).toBe(DEFAULTS.enabled);
   });
 
@@ -52,8 +51,7 @@ describe("settings", () => {
     expect(normalize(bad).mode).toBe(DEFAULTS.mode);
   });
 
-  it("normalize resets variant to skin default when incompatible", () => {
-    expect(normalize({ skin: "solid", variant: "corner-dots" }).variant).toBe("shaded");
-    expect(normalize({ skin: "wireframe", variant: "halftone" }).variant).toBe("corner-dots");
+  it("normalize rejects invalid variant values", () => {
+    expect(normalize({ variant: "crosshatch" as unknown as VoxelSettings["variant"] }).variant).toBe(DEFAULTS.variant);
   });
 });

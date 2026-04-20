@@ -11,6 +11,7 @@ export interface VoxelBody {
 export interface PhysicsParams {
   k: number;
   c: number;
+  mass?: number;
   angDrag?: number;
   angK?: number;
 }
@@ -41,6 +42,7 @@ export function stepPhysics(
 ): void {
   const k = params.k;
   const c = params.c;
+  const invMass = 1 / (params.mass ?? 1);
   const angDrag = params.angDrag ?? 4;
   const angK = params.angK ?? 10;
 
@@ -50,7 +52,7 @@ export function stepPhysics(
     _disp.subVectors(b.home, b.pos).multiplyScalar(k);
     _force.copy(_disp).addScaledVector(b.vel, -c).add(modeForce(b));
 
-    b.vel.addScaledVector(_force, dt);
+    b.vel.addScaledVector(_force, dt * invMass);
     b.pos.addScaledVector(b.vel, dt);
 
     b.angVel.x += (-angK * b.rot.x - angDrag * b.angVel.x) * dt;
