@@ -5,6 +5,7 @@ import type { Group } from "three";
 import type { VoxelMode } from "../settings";
 import { explodeMode } from "./explode";
 import { repelMode } from "./repel";
+import { magnetMode } from "./magnet";
 
 export interface ModeContext {
   bodies: VoxelBody[];
@@ -42,7 +43,7 @@ export const noForceMode: Mode = {
 };
 registerMode("explode", explodeMode);
 registerMode("repel", repelMode);
-registerMode("magnet", noForceMode);
+registerMode("magnet", magnetMode);
 registerMode("tilt", noForceMode);
 registerMode("swirl", noForceMode);
 registerMode("gravity", noForceMode);
