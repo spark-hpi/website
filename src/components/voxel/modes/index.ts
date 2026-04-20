@@ -7,6 +7,7 @@ import { explodeMode } from "./explode";
 import { repelMode } from "./repel";
 import { magnetMode } from "./magnet";
 import { tiltMode } from "./tilt";
+import { swirlMode } from "./swirl";
 
 export interface ModeContext {
   bodies: VoxelBody[];
@@ -46,5 +47,5 @@ registerMode("explode", explodeMode);
 registerMode("repel", repelMode);
 registerMode("magnet", magnetMode);
 registerMode("tilt", tiltMode);
-registerMode("swirl", noForceMode);
+registerMode("swirl", swirlMode);
 registerMode("gravity", noForceMode);
