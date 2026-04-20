@@ -18,7 +18,7 @@ describe("settings", () => {
 
   it("DEFAULTS has the expected shape", () => {
     expect(DEFAULTS.enabled).toBe(true);
-    expect(DEFAULTS.mode).toBe("repel");
+    expect(DEFAULTS.mode).toBe("magnet");
     expect(DEFAULTS.variant).toBe("solid");
     expect(DEFAULTS.idle).toBe("breathe");
   });

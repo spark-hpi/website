@@ -1,5 +1,4 @@
-import { ACESFilmicToneMapping, Group, OrthographicCamera, PMREMGenerator, Scene, WebGLRenderer } from "three";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { ACESFilmicToneMapping, Group, OrthographicCamera, Scene, WebGLRenderer } from "three";
 
 export interface SceneHandle {
   scene: Scene;
@@ -21,14 +20,6 @@ export function createScene(canvas: HTMLCanvasElement): SceneHandle {
 
   const scene = new Scene();
 
-  // PBR transmission (glass) requires an environment to sample from — otherwise
-  // MeshPhysicalMaterial with transmission renders black. RoomEnvironment is a
-  // lightweight built-in soft studio that gives clean glass + real reflections.
-  const pmrem = new PMREMGenerator(renderer);
-  const roomEnv = new RoomEnvironment();
-  const envRT = pmrem.fromScene(roomEnv, 0.04);
-  scene.environment = envRT.texture;
-  roomEnv.dispose();
   const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 100);
   camera.position.set(0, 0, 5);
   camera.lookAt(0, 0, 0);
@@ -109,8 +100,6 @@ export function createScene(canvas: HTMLCanvasElement): SceneHandle {
       ro.disconnect();
       io.disconnect();
       document.removeEventListener("visibilitychange", onVis);
-      envRT.dispose();
-      pmrem.dispose();
       renderer.dispose();
     },
   };

@@ -1,17 +1,15 @@
 import { AmbientLight, DirectionalLight, Euler, InstancedMesh, Matrix4, Object3D, Quaternion, Vector3 } from "three";
 import { createScene } from "./scene";
 import { createSolidMesh } from "./skin-solid";
-import { createLiquidStar, type LiquidHandle } from "./skin-liquid";
 import { voxelize, type VoxelCell } from "./voxelize";
 import { fetchPathD, rasterizeSvgPath } from "./rasterize";
-import { DEFAULTS, load as loadSettings, normalize, SETTINGS_EVENT, type VoxelSettings, type VoxelVariant, type VoxelEdge } from "./settings";
+import { DEFAULTS, load as loadSettings, normalize, SETTINGS_EVENT, type VoxelSettings, type VoxelEdge } from "./settings";
 import { createVoxelBodies, makeFixedStep, stepPhysics, type VoxelBody } from "./physics";
 import { attachInput } from "./input";
 import { getMode, type ModeContext } from "./modes";
 import { explodeMode } from "./modes/explode";
 import { repelMode } from "./modes/repel";
 import { magnetMode } from "./modes/magnet";
-import { swirlMode } from "./modes/swirl";
 import { tiltMode } from "./modes/tilt";
 import { gravityMode } from "./modes/gravity";
 import { applyIdle } from "./idle";
@@ -37,15 +35,9 @@ interface SolidHandle {
   recolor(c: string): void;
 }
 
-type ActiveSkin =
-  | { kind: "voxels"; interior: SolidHandle; boundary: SolidHandle | null }
-  | { kind: "liquid"; handle: LiquidHandle };
-
-function supportsWebGL2(): boolean {
-  try {
-    const c = document.createElement("canvas");
-    return !!c.getContext("webgl2");
-  } catch { return false; }
+interface ActiveSkin {
+  interior: SolidHandle;
+  boundary: SolidHandle | null;
 }
 
 function forceMobileSafe(s: VoxelSettings): VoxelSettings {
@@ -68,7 +60,6 @@ function applyTuning(s: VoxelSettings): void {
   explodeMode.params!.angularImpulse = 2.0 * k;
   repelMode.params!.strength         = 30  * k;
   magnetMode.params!.strength        = 60  * k;
-  swirlMode.params!.strength         = 40  * k;
   tiltMode.params!.maxTiltY          = 0.6 * k;
   tiltMode.params!.maxTiltX          = 0.4 * k;
   gravityMode.params!.g              = s.gravity;
@@ -79,11 +70,6 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   let settings: VoxelSettings = forceReducedMotion(forceMobileSafe(normalize({ ...loadSettings(), ...options.settings })));
   const svgUrl = options.svgUrl ?? "/star_monocolor.svg";
   const host = canvas.parentElement as HTMLElement;
-
-  if (settings.variant === "liquid-glass" && !supportsWebGL2()) {
-    console.warn("[voxel] liquid-glass requires WebGL2; falling back to solid");
-    settings.variant = "solid";
-  }
 
   const scene = createScene(canvas);
 
@@ -103,7 +89,6 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   let gridW = 0, gridH = 0;
   let voxelSize = 0;
   let activeRef: ActiveSkin | null = null;
-  let activeVariant: VoxelVariant = settings.variant;
   let activeResolution = settings.resolution;
   let activeEdge: VoxelEdge = settings.edge;
   let bodies: VoxelBody[] = [];
@@ -126,36 +111,24 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
     const boundaryCount = carved ? boundaryBody.length : 0;
     const subSize = voxelSize / SUB;
 
-    const interior = createSolidMesh(interiorCount, voxelSize, settings.variant, fg);
+    const interior = createSolidMesh(interiorCount, voxelSize, fg);
     const boundary = boundaryCount > 0
-      ? createSolidMesh(boundaryCount, subSize, settings.variant, fg)
+      ? createSolidMesh(boundaryCount, subSize, fg)
       : null;
     return { interior, boundary };
   }
 
   function attachActive(a: ActiveSkin) {
-    if (a.kind === "voxels") {
-      scene.root.add(a.interior.mesh);
-      if (a.boundary) scene.root.add(a.boundary.mesh);
-    } else {
-      scene.root.add(a.handle.group);
-    }
+    scene.root.add(a.interior.mesh);
+    if (a.boundary) scene.root.add(a.boundary.mesh);
   }
   function detachActive(a: ActiveSkin) {
-    if (a.kind === "voxels") {
-      scene.root.remove(a.interior.mesh);
-      if (a.boundary) scene.root.remove(a.boundary.mesh);
-    } else {
-      scene.root.remove(a.handle.group);
-    }
+    scene.root.remove(a.interior.mesh);
+    if (a.boundary) scene.root.remove(a.boundary.mesh);
   }
   function disposeActive(a: ActiveSkin) {
-    if (a.kind === "voxels") {
-      a.interior.dispose();
-      a.boundary?.dispose();
-    } else {
-      a.handle.dispose();
-    }
+    a.interior.dispose();
+    a.boundary?.dispose();
   }
 
   function buildCtx(dt: number): ModeContext {
@@ -217,7 +190,7 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
     boundaryLocal = Float32Array.from(boundaryOffsets);
 
     const { interior, boundary } = buildVoxelSkin();
-    const next: ActiveSkin = { kind: "voxels", interior, boundary };
+    const next: ActiveSkin = { interior, boundary };
     if (activeRef) {
       detachActive(activeRef);
       disposeActive(activeRef);
@@ -225,35 +198,11 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
     activeRef = next;
     attachActive(next);
 
-    activeVariant = settings.variant;
     activeResolution = res;
     activeEdge = edge;
   }
 
-  async function rebuildLiquid(): Promise<void> {
-    const liquid = await createLiquidStar(svgUrl, 2.0);
-    const next: ActiveSkin = { kind: "liquid", handle: liquid };
-    if (activeRef) {
-      detachActive(activeRef);
-      disposeActive(activeRef);
-    }
-    activeRef = next;
-    attachActive(next);
-    activeVariant = settings.variant;
-    // Clear voxel state so a later swap back to voxels triggers full rebuild.
-    bodies = [];
-    cells = [];
-  }
-
-  async function rebuildForCurrentVariant(): Promise<void> {
-    if (settings.variant === "liquid-glass") {
-      await rebuildLiquid();
-    } else {
-      await rebuildVoxels(settings.resolution, settings.edge);
-    }
-  }
-
-  void rebuildForCurrentVariant();
+  void rebuildVoxels(settings.resolution, settings.edge);
 
   const _tmp = new Object3D();
   const _bodyMat = new Matrix4();
@@ -267,11 +216,6 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   const frameCb = (dt: number) => {
     t += dt;
     if (!activeRef) return;
-
-    if (activeRef.kind === "liquid") {
-      activeRef.handle.update(t, settings.idle === "breathe");
-      return;
-    }
 
     const active = activeRef;
     const ctx: ModeContext = buildCtx(dt);
@@ -317,7 +261,6 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
 
   function applySettings(next: VoxelSettings) {
     const oldMode = currentMode;
-    const prevVariant = settings.variant;
     settings = next;
     currentMode = next.mode;
     applyTuning(next);
@@ -339,22 +282,8 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
       getMode(next.mode).onEnter?.(ctx);
     }
 
-    // Variant flip: full rebuild onto the other pipeline.
-    if (next.variant !== prevVariant) {
-      void rebuildForCurrentVariant();
-      return;
-    }
-
-    // Voxel-only knobs.
-    if (settings.variant === "solid") {
-      const gridDirty = next.resolution !== activeResolution || next.edge !== activeEdge;
-      if (gridDirty) {
-        void rebuildVoxels(next.resolution, next.edge);
-        return;
-      }
-      if (activeRef?.kind === "voxels" && activeVariant !== next.variant) {
-        // Same-family variant change (only "solid" in voxel family right now, so no-op).
-      }
+    if (next.resolution !== activeResolution || next.edge !== activeEdge) {
+      void rebuildVoxels(next.resolution, next.edge);
     }
   }
 
@@ -366,12 +295,8 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
 
   const themeWatcher = watchFg((fg) => {
     if (!activeRef) return;
-    if (activeRef.kind === "voxels") {
-      activeRef.interior.recolor(fg);
-      activeRef.boundary?.recolor(fg);
-    } else {
-      activeRef.handle.recolor(fg);
-    }
+    activeRef.interior.recolor(fg);
+    activeRef.boundary?.recolor(fg);
   });
 
   return {

@@ -1,5 +1,5 @@
-export type VoxelMode = "explode" | "repel" | "magnet" | "tilt" | "swirl" | "gravity";
-export type VoxelVariant = "solid" | "liquid-glass";
+export type VoxelMode = "explode" | "repel" | "magnet" | "tilt" | "gravity";
+export type VoxelVariant = "solid";
 export type VoxelIdle = "still" | "breathe";
 export type VoxelEdge = "blocky" | "carved";
 
@@ -29,21 +29,21 @@ export const RANGES: Record<
   NumericRange
 > = {
   resolution: { min: 16, max: 240, step: 2, default: 120 },
-  stiffness:  { min: 5,  max: 160, step: 1, default: 40 },
+  stiffness:  { min: 5,  max: 160, step: 1, default: 55 },
   damping:    { min: 0,  max: 20,  step: 0.2, default: 6 },
   mass:       { min: 0.2, max: 5,  step: 0.1, default: 1 },
-  strength:   { min: 0,  max: 3,   step: 0.05, default: 1 },
+  strength:   { min: 0,  max: 3,   step: 0.05, default: 0.15 },
   gravity:    { min: 0,  max: 10,  step: 0.1, default: 1.5 },
 };
 
-const MODES: VoxelMode[] = ["explode", "repel", "magnet", "tilt", "swirl", "gravity"];
-const VARIANTS: VoxelVariant[] = ["solid", "liquid-glass"];
+const MODES: VoxelMode[] = ["explode", "repel", "magnet", "tilt", "gravity"];
+const VARIANTS: VoxelVariant[] = ["solid"];
 const IDLES: VoxelIdle[] = ["still", "breathe"];
 const EDGES: VoxelEdge[] = ["blocky", "carved"];
 
 export const DEFAULTS: VoxelSettings = {
   enabled: true,
-  mode: "repel",
+  mode: "magnet",
   variant: "solid",
   idle: "breathe",
   edge: "carved",

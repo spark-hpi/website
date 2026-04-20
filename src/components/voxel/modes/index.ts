@@ -7,7 +7,6 @@ import { explodeMode } from "./explode";
 import { repelMode } from "./repel";
 import { magnetMode } from "./magnet";
 import { tiltMode } from "./tilt";
-import { swirlMode } from "./swirl";
 import { gravityMode } from "./gravity";
 
 export interface ModeContext {
@@ -48,5 +47,4 @@ registerMode("explode", explodeMode);
 registerMode("repel", repelMode);
 registerMode("magnet", magnetMode);
 registerMode("tilt", tiltMode);
-registerMode("swirl", swirlMode);
 registerMode("gravity", gravityMode);
