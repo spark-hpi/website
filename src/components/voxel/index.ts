@@ -1,6 +1,7 @@
 import { AmbientLight, DirectionalLight, Matrix4, Object3D, Vector3 } from "three";
 import { createScene, type SceneHandle } from "./scene";
 import { applyHomeMatrices, createSolidMesh } from "./skin-solid";
+import { createWireframeMesh } from "./skin-wireframe";
 import { chooseDepthScale, voxelize, type VoxelCell } from "./voxelize";
 import { distanceTransform } from "./distanceField";
 import { fetchPathD, rasterizeSvgPath } from "./rasterize";
@@ -41,7 +42,7 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   let cells: VoxelCell[] = [];
   let gridW = 0, gridH = 0, gridD = 0;
   let voxelSize = 0;
-  let mesh: ReturnType<typeof createSolidMesh> | null = null;
+  let mesh: { mesh: import("three").InstancedMesh; dispose(): void; recolor(fg: string): void } | null = null;
   let bodies: VoxelBody[] = [];
   const ZERO = new Vector3();
   const noForce = () => ZERO;
@@ -72,7 +73,9 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
     bodies = createVoxelBodies(homes);
 
     const fg = getComputedStyle(document.documentElement).getPropertyValue("--fg").trim() || "#11053b";
-    const m = createSolidMesh(cells, voxelSize, "flat", fg);
+    const m = settings.skin === "wireframe"
+      ? createWireframeMesh(cells, voxelSize, settings.variant as import("./settings").VoxelWireframeVariant, fg)
+      : createSolidMesh(cells, voxelSize, settings.variant as import("./settings").VoxelSolidVariant, fg);
     applyHomeMatrices(m.mesh, cells, voxelSize, gridW, gridH, gridD);
     scene.root.add(m.mesh);
     mesh = m;
