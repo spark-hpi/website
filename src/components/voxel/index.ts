@@ -1,13 +1,7 @@
-export interface VoxelSettings {
-  enabled: boolean;
-  mode: "explode" | "repel" | "magnet" | "tilt" | "swirl" | "gravity";
-  skin: "wireframe" | "solid";
-  variant: string;
-  idle: "still" | "rotate" | "breathe" | "drift";
-}
+export { type VoxelSettings, type VoxelMode, type VoxelSkin, type VoxelVariant, type VoxelIdle, DEFAULTS, load as loadSettings, save as saveSettings, SETTINGS_EVENT } from "./settings";
 
 export interface InitOptions {
-  settings?: Partial<VoxelSettings>;
+  settings?: Partial<import("./settings").VoxelSettings>;
 }
 
 export interface VoxelHandle {
