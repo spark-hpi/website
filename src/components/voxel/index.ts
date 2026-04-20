@@ -9,6 +9,7 @@ import { DEFAULTS, load as loadSettings, normalize, type VoxelSettings } from ".
 import { createVoxelBodies, makeFixedStep, stepPhysics, type VoxelBody } from "./physics";
 import { attachInput } from "./input";
 import { getMode, type ModeContext } from "./modes";
+import { applyIdle } from "./idle";
 
 export type { VoxelSettings } from "./settings";
 export { DEFAULTS, load as loadSettings, save as saveSettings, SETTINGS_EVENT } from "./settings";
@@ -61,6 +62,9 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   let activeRef: ActiveSkin | null = null;
   let posBuffer: Float32Array | null = null;
   let bodies: VoxelBody[] = [];
+  let baseHomes: Vector3[] = [];
+  let seeds: number[] = [];
+  let t = 0;
   const ZERO = new Vector3();
   const noForce = () => ZERO;
   const fixedStep = makeFixedStep(1 / 60);
@@ -87,6 +91,8 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
       (gridH / 2 - c.gy - 0.5) * voxelSize,
       (c.gz) * voxelSize,
     ));
+    baseHomes = homes;
+    seeds = cells.map((c) => c.seed);
     bodies = createVoxelBodies(homes);
 
     const fg = getComputedStyle(document.documentElement).getPropertyValue("--fg").trim() || "#11053b";
@@ -120,6 +126,8 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
       dt,
       voxelSize,
     };
+    t += dt;
+    applyIdle(settings.idle, { bodies, homes: baseHomes, seeds, voxelSize, root: scene.root, t });
     const mode = getMode(currentMode);
     mode.beforeStep?.(ctx);
     fixedStep(dt, () => {
