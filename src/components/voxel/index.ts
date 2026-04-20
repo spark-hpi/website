@@ -6,6 +6,8 @@ import { distanceTransform } from "./distanceField";
 import { fetchPathD, rasterizeSvgPath } from "./rasterize";
 import { DEFAULTS, load as loadSettings, normalize, type VoxelSettings } from "./settings";
 import { createVoxelBodies, makeFixedStep, stepPhysics, type VoxelBody } from "./physics";
+import { attachInput } from "./input";
+import { getMode, type ModeContext } from "./modes";
 
 export type { VoxelSettings } from "./settings";
 export { DEFAULTS, load as loadSettings, save as saveSettings, SETTINGS_EVENT } from "./settings";
@@ -32,6 +34,9 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   key.position.set(2, 3, 4);
   scene.scene.add(amb);
   scene.scene.add(key);
+
+  const input = attachInput(canvas, scene.camera);
+  let currentMode: import("./settings").VoxelMode = settings.mode;
 
   let cells: VoxelCell[] = [];
   let gridW = 0, gridH = 0, gridD = 0;
@@ -75,14 +80,25 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
 
   scene.start((dt) => {
     if (!mesh) return;
+    const ctx: ModeContext = {
+      bodies,
+      input: input.state,
+      root: scene.root,
+      dt,
+      voxelSize,
+    };
+    const mode = getMode(currentMode);
+    mode.beforeStep?.(ctx);
     fixedStep(dt, () => {
-      stepPhysics(bodies, 1 / 60, noForce, { k: 40, c: 6 });
+      stepPhysics(bodies, 1 / 60, (b) => mode.force(b, ctx), { k: 40, c: 6 });
     });
+    input.endFrame();
     writeMatrices(mesh.mesh, bodies);
   });
 
   return {
     dispose() {
+      input.dispose();
       if (mesh) {
         scene.root.remove(mesh.mesh);
         mesh.dispose();
