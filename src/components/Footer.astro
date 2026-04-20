@@ -69,6 +69,56 @@
 		<button id="clr-reset" type="button">Reset this theme</button>
 		<span class="hint">Saved to this browser</span>
 	</div>
+
+	<div class="section-divider" aria-hidden="true"></div>
+	<div class="head"><span class="title">Voxel star</span></div>
+
+	<div class="row">
+		<label>Effects</label>
+		<div class="segmented" role="group" aria-label="Voxel effects toggle">
+			<button type="button" data-voxel-enable="on"  class="seg">on</button>
+			<button type="button" data-voxel-enable="off" class="seg">off</button>
+		</div>
+	</div>
+
+	<div class="row">
+		<label for="vox-mode">Mode</label>
+		<select id="vox-mode" data-voxel="mode">
+			<option value="explode">Explode</option>
+			<option value="repel">Repel</option>
+			<option value="magnet">Magnet</option>
+			<option value="tilt">Tilt</option>
+			<option value="swirl">Swirl</option>
+			<option value="gravity">Gravity</option>
+		</select>
+	</div>
+
+	<div class="row">
+		<label for="vox-skin">Skin</label>
+		<select id="vox-skin" data-voxel="skin">
+			<option value="wireframe">Wireframe</option>
+			<option value="solid">Solid</option>
+		</select>
+	</div>
+
+	<div class="row">
+		<label for="vox-variant">Variant</label>
+		<select id="vox-variant" data-voxel="variant"></select>
+	</div>
+
+	<div class="row">
+		<label for="vox-idle">Idle</label>
+		<select id="vox-idle" data-voxel="idle">
+			<option value="still">Still</option>
+			<option value="rotate">Rotate</option>
+			<option value="breathe">Breathe</option>
+			<option value="drift">Drift</option>
+		</select>
+	</div>
+
+	<div class="row voxel-hint" hidden id="vox-mobile-hint">
+		<span></span><span class="hint">tap the star to explode</span>
+	</div>
 </div>
 
 <style>
@@ -207,6 +257,53 @@
 		color: var(--bg);
 	}
 	#theme-edit-panel .hint {
+		font-size: 10px;
+		color: var(--muted);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+	#theme-edit-panel .section-divider {
+		margin: 14px 0 10px;
+		border-top: 1px dotted var(--rule);
+	}
+	#theme-edit-panel select {
+		font-family: var(--mono);
+		font-size: 12px;
+		background: transparent;
+		color: var(--fg);
+		border: 1px solid var(--rule);
+		padding: 3px 6px;
+		width: 100%;
+		grid-column: 2 / span 2;
+	}
+	#theme-edit-panel select:focus {
+		outline: none;
+		border-color: var(--fg);
+	}
+	#theme-edit-panel .segmented {
+		display: inline-flex;
+		grid-column: 2 / span 2;
+	}
+	#theme-edit-panel .segmented .seg {
+		font-family: var(--mono);
+		font-size: 10px;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		background: transparent;
+		color: var(--fg);
+		border: 1px solid var(--rule);
+		padding: 2px 8px;
+		cursor: pointer;
+	}
+	#theme-edit-panel .segmented .seg + .seg {
+		border-left: 0;
+	}
+	#theme-edit-panel .segmented .seg[aria-pressed="true"] {
+		background: var(--fg);
+		color: var(--bg);
+	}
+	#theme-edit-panel .voxel-hint .hint {
+		grid-column: 2 / span 2;
 		font-size: 10px;
 		color: var(--muted);
 		text-transform: uppercase;
@@ -415,4 +512,96 @@
 			];
 		applyThemeMode(currentMode);
 	});
+
+	// ── Voxel star panel ─────────────────────────────────────────
+	import {
+		type VoxelSettings,
+		type VoxelSkin,
+		type VoxelVariant,
+		DEFAULTS as VOX_DEFAULTS,
+		SETTINGS_EVENT as VOX_EVENT,
+		load as voxLoad,
+		save as voxSave,
+		variantsFor,
+	} from "./voxel/settings";
+
+	const voxMode = document.getElementById("vox-mode") as HTMLSelectElement | null;
+	const voxSkin = document.getElementById("vox-skin") as HTMLSelectElement | null;
+	const voxVariant = document.getElementById("vox-variant") as HTMLSelectElement | null;
+	const voxIdle = document.getElementById("vox-idle") as HTMLSelectElement | null;
+	const voxEnableBtns = document.querySelectorAll<HTMLButtonElement>("[data-voxel-enable]");
+	const voxMobileHint = document.getElementById("vox-mobile-hint") as HTMLDivElement | null;
+
+	if (voxMode && voxSkin && voxVariant && voxIdle) {
+		const VARIANT_LABEL: Record<VoxelVariant, string> = {
+			"corner-dots": "Corner dots",
+			"front-face": "Front-face outlines",
+			"flat": "Flat",
+			"shaded": "Shaded",
+			"page-texture": "Page-texture",
+			"crosshatch": "Crosshatch",
+			"halftone": "Halftone",
+			"liquid-glass": "Liquid glass",
+		};
+
+		let state: VoxelSettings = voxLoad();
+
+		function populateVariants(skin: VoxelSkin, selected: VoxelVariant) {
+			voxVariant!.innerHTML = "";
+			for (const v of variantsFor(skin)) {
+				const opt = document.createElement("option");
+				opt.value = v;
+				opt.textContent = VARIANT_LABEL[v];
+				if (v === selected) opt.selected = true;
+				voxVariant!.appendChild(opt);
+			}
+		}
+
+		function reflect() {
+			voxMode!.value = state.mode;
+			voxSkin!.value = state.skin;
+			populateVariants(state.skin, state.variant);
+			voxIdle!.value = state.idle;
+			for (const b of voxEnableBtns) {
+				b.setAttribute("aria-pressed", (b.dataset.voxelEnable === (state.enabled ? "on" : "off")).toString());
+			}
+		}
+
+		function commit(next: Partial<VoxelSettings>) {
+			state = { ...state, ...next };
+			// If skin changed, reset variant to first of the new family.
+			if (next.skin && !variantsFor(state.skin).includes(state.variant)) {
+				state.variant = variantsFor(state.skin)[0];
+			}
+			voxSave(state);
+			reflect();
+			document.dispatchEvent(new CustomEvent(VOX_EVENT, { detail: state }));
+		}
+
+		voxMode.addEventListener("change", () => commit({ mode: voxMode.value as VoxelSettings["mode"] }));
+		voxSkin.addEventListener("change", () => commit({ skin: voxSkin.value as VoxelSkin }));
+		voxVariant.addEventListener("change", () => commit({ variant: voxVariant.value as VoxelVariant }));
+		voxIdle.addEventListener("change", () => commit({ idle: voxIdle.value as VoxelSettings["idle"] }));
+		for (const b of voxEnableBtns) {
+			b.addEventListener("click", () => commit({ enabled: b.dataset.voxelEnable === "on" }));
+		}
+
+		// Touch-only detection: filter Mode to Explode only.
+		const touchOnly = matchMedia("(hover: none) and (pointer: coarse)").matches;
+		if (touchOnly) {
+			voxMode.querySelectorAll("option").forEach((o) => {
+				if (o.value !== "explode") o.remove();
+			});
+			if (voxMobileHint) voxMobileHint.hidden = false;
+			if (state.mode !== "explode") commit({ mode: "explode" });
+		}
+
+		// Reduced-motion: pin idle to Still on first load unless user has saved otherwise.
+		const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+		if (reducedMotion && !localStorage.getItem("spark-voxel-settings")) {
+			commit({ idle: "still" });
+		}
+
+		reflect();
+	}
 </script>
