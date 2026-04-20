@@ -1,6 +1,6 @@
 import {
   BoxGeometry, Color, InstancedMesh, Matrix4, MeshBasicMaterial, MeshLambertMaterial,
-  Object3D, ShaderMaterial, Vector3, type BufferGeometry, type Material,
+  MeshPhysicalMaterial, Object3D, ShaderMaterial, Vector3, type BufferGeometry, type Material,
 } from "three";
 import type { VoxelCell } from "./voxelize";
 import type { VoxelSolidVariant } from "./settings";
@@ -67,6 +67,22 @@ function makeCrosshatch(fg: string): ShaderMaterial {
   });
 }
 
+// NOTE: page-level backdrop capture is omitted; transmission applies only
+// between voxels (voxel-to-voxel refraction). True backdrop sampling would
+// require html2canvas or a snapshot canvas layer and is deferred.
+function makeLiquidGlass(fg: string, voxelSize: number): MeshPhysicalMaterial {
+  return new MeshPhysicalMaterial({
+    color: new Color(fg),
+    transmission: 1,
+    thickness: voxelSize * 1.5,
+    ior: 1.45,
+    roughness: 0.05,
+    opacity: 0.15,
+    transparent: true,
+    metalness: 0,
+  });
+}
+
 function makeHalftone(fg: string): ShaderMaterial {
   return new ShaderMaterial({
     uniforms: {
@@ -79,7 +95,7 @@ function makeHalftone(fg: string): ShaderMaterial {
   });
 }
 
-function makeMaterial(v: VoxelSolidVariant, fg: string, _voxelSize: number): Material {
+function makeMaterial(v: VoxelSolidVariant, fg: string, voxelSize: number): Material {
   const color = new Color(fg);
   switch (v) {
     case "flat":         return new MeshBasicMaterial({ color });
@@ -87,6 +103,7 @@ function makeMaterial(v: VoxelSolidVariant, fg: string, _voxelSize: number): Mat
     case "page-texture": return makePageTexture(fg);
     case "crosshatch":   return makeCrosshatch(fg);
     case "halftone":     return makeHalftone(fg);
+    case "liquid-glass": return makeLiquidGlass(fg, voxelSize);
     default:             return new MeshBasicMaterial({ color });
   }
 }

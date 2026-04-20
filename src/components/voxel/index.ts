@@ -27,10 +27,22 @@ type ActiveSkin =
   | { kind: "instanced"; handle: { mesh: import("three").InstancedMesh; dispose(): void; recolor(c: string): void } }
   | { kind: "lines"; handle: import("./skin-wireframe").FrontFaceLines };
 
+function supportsWebGL2(): boolean {
+  try {
+    const c = document.createElement("canvas");
+    return !!c.getContext("webgl2");
+  } catch { return false; }
+}
+
 export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): VoxelHandle {
   const settings: VoxelSettings = normalize({ ...loadSettings(), ...options.settings });
   const svgUrl = options.svgUrl ?? "/star_monocolor.svg";
   const budget = options.budget ?? 400;
+
+  if (settings.variant === "liquid-glass" && !supportsWebGL2()) {
+    console.warn("[voxel] liquid-glass requires WebGL2; falling back to shaded");
+    settings.variant = "shaded";
+  }
 
   const scene = createScene(canvas);
 
