@@ -36,8 +36,22 @@ function supportsWebGL2(): boolean {
   } catch { return false; }
 }
 
+function forceMobileSafe(s: VoxelSettings): VoxelSettings {
+  const touchOnly = typeof matchMedia !== "undefined" && matchMedia("(hover: none) and (pointer: coarse)").matches;
+  if (touchOnly && s.mode !== "explode") return { ...s, mode: "explode" };
+  return s;
+}
+
+function forceReducedMotion(s: VoxelSettings): VoxelSettings {
+  const rm = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (rm && s.idle !== "still" && !localStorage.getItem("spark-voxel-idle-override")) {
+    return { ...s, idle: "still" };
+  }
+  return s;
+}
+
 export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): VoxelHandle {
-  let settings: VoxelSettings = normalize({ ...loadSettings(), ...options.settings });
+  let settings: VoxelSettings = forceReducedMotion(forceMobileSafe(normalize({ ...loadSettings(), ...options.settings })));
   const svgUrl = options.svgUrl ?? "/star_monocolor.svg";
   const budget = options.budget ?? 400;
   const host = canvas.parentElement as HTMLElement;
