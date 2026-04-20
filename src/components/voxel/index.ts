@@ -1,7 +1,7 @@
 import { AmbientLight, DirectionalLight, Matrix4, Object3D, Vector3 } from "three";
 import { createScene, type SceneHandle } from "./scene";
 import { applyHomeMatrices, createSolidMesh } from "./skin-solid";
-import { createWireframeMesh } from "./skin-wireframe";
+import { createFrontFaceLines, createWireframeMesh } from "./skin-wireframe";
 import { chooseDepthScale, voxelize, type VoxelCell } from "./voxelize";
 import { distanceTransform } from "./distanceField";
 import { fetchPathD, rasterizeSvgPath } from "./rasterize";
@@ -23,6 +23,10 @@ export interface VoxelHandle {
   dispose(): void;
 }
 
+type ActiveSkin =
+  | { kind: "instanced"; handle: { mesh: import("three").InstancedMesh; dispose(): void; recolor(c: string): void } }
+  | { kind: "lines"; handle: import("./skin-wireframe").FrontFaceLines };
+
 export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): VoxelHandle {
   const settings: VoxelSettings = normalize({ ...loadSettings(), ...options.settings });
   const svgUrl = options.svgUrl ?? "/star_monocolor.svg";
@@ -42,7 +46,8 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   let cells: VoxelCell[] = [];
   let gridW = 0, gridH = 0, gridD = 0;
   let voxelSize = 0;
-  let mesh: { mesh: import("three").InstancedMesh; dispose(): void; recolor(fg: string): void } | null = null;
+  let activeRef: ActiveSkin | null = null;
+  let posBuffer: Float32Array | null = null;
   let bodies: VoxelBody[] = [];
   const ZERO = new Vector3();
   const noForce = () => ZERO;
@@ -73,16 +78,29 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
     bodies = createVoxelBodies(homes);
 
     const fg = getComputedStyle(document.documentElement).getPropertyValue("--fg").trim() || "#11053b";
-    const m = settings.skin === "wireframe"
-      ? createWireframeMesh(cells, voxelSize, settings.variant as import("./settings").VoxelWireframeVariant, fg)
-      : createSolidMesh(cells, voxelSize, settings.variant as import("./settings").VoxelSolidVariant, fg);
-    applyHomeMatrices(m.mesh, cells, voxelSize, gridW, gridH, gridD);
-    scene.root.add(m.mesh);
-    mesh = m;
+    let active: ActiveSkin;
+    if (settings.skin === "wireframe" && settings.variant === "front-face") {
+      const h = createFrontFaceLines(cells, voxelSize, fg);
+      scene.root.add(h.object);
+      active = { kind: "lines", handle: h };
+    } else if (settings.skin === "wireframe") {
+      const h = createWireframeMesh(cells, voxelSize, settings.variant as import("./settings").VoxelWireframeVariant, fg);
+      applyHomeMatrices(h.mesh, cells, voxelSize, gridW, gridH, gridD);
+      scene.root.add(h.mesh);
+      active = { kind: "instanced", handle: h };
+    } else {
+      const h = createSolidMesh(cells, voxelSize, settings.variant as import("./settings").VoxelSolidVariant, fg);
+      applyHomeMatrices(h.mesh, cells, voxelSize, gridW, gridH, gridD);
+      scene.root.add(h.mesh);
+      active = { kind: "instanced", handle: h };
+    }
+    posBuffer = new Float32Array(cells.length * 3);
+    activeRef = active;
   })();
 
   scene.start((dt) => {
-    if (!mesh) return;
+    if (!activeRef) return;
+    const active = activeRef;
     const ctx: ModeContext = {
       bodies,
       input: input.state,
@@ -96,15 +114,28 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
       stepPhysics(bodies, 1 / 60, (b) => mode.force(b, ctx), { k: 40, c: 6 });
     });
     input.endFrame();
-    writeMatrices(mesh.mesh, bodies);
+    if (active.kind === "instanced") {
+      writeMatrices(active.handle.mesh, bodies);
+    } else if (posBuffer) {
+      for (let i = 0; i < bodies.length; i++) {
+        posBuffer[i * 3 + 0] = bodies[i].pos.x;
+        posBuffer[i * 3 + 1] = bodies[i].pos.y;
+        posBuffer[i * 3 + 2] = bodies[i].pos.z;
+      }
+      active.handle.update(cells, posBuffer);
+    }
   });
 
   return {
     dispose() {
       input.dispose();
-      if (mesh) {
-        scene.root.remove(mesh.mesh);
-        mesh.dispose();
+      if (activeRef) {
+        if (activeRef.kind === "instanced") {
+          scene.root.remove(activeRef.handle.mesh);
+        } else {
+          scene.root.remove(activeRef.handle.object);
+        }
+        activeRef.handle.dispose();
       }
       scene.dispose();
     },
