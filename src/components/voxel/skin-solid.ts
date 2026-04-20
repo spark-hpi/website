@@ -1,9 +1,10 @@
 import {
   BoxGeometry, Color, InstancedMesh, Matrix4, MeshBasicMaterial, MeshLambertMaterial,
-  Object3D, type BufferGeometry, type Material,
+  Object3D, ShaderMaterial, type BufferGeometry, type Material,
 } from "three";
 import type { VoxelCell } from "./voxelize";
 import type { VoxelSolidVariant } from "./settings";
+import { pageTextureVert, pageTextureFrag } from "./shaders/page-texture.glsl";
 
 export interface VoxelMesh {
   mesh: InstancedMesh;
@@ -14,7 +15,7 @@ export interface VoxelMesh {
 
 export function createSolidMesh(cells: VoxelCell[], voxelSize: number, variant: VoxelSolidVariant, fg: string): VoxelMesh {
   const geometry: BufferGeometry = new BoxGeometry(voxelSize, voxelSize, voxelSize);
-  let material: Material = makeMaterial(variant, fg);
+  let material: Material = makeMaterial(variant, fg, voxelSize);
   const mesh = new InstancedMesh(geometry, material, cells.length);
   mesh.count = cells.length;
 
@@ -22,11 +23,14 @@ export function createSolidMesh(cells: VoxelCell[], voxelSize: number, variant: 
     mesh,
     setVariant(v) {
       material.dispose();
-      material = makeMaterial(v, fg);
+      material = makeMaterial(v, fg, voxelSize);
       mesh.material = material;
     },
     recolor(c) {
-      if ("color" in material && (material as MeshBasicMaterial).color) {
+      if (material instanceof ShaderMaterial) {
+        const u = material.uniforms.uColor;
+        if (u && u.value && typeof u.value.set === "function") u.value.set(c);
+      } else if ("color" in material && (material as MeshBasicMaterial).color) {
         (material as MeshBasicMaterial).color.set(c);
       }
     },
@@ -37,12 +41,25 @@ export function createSolidMesh(cells: VoxelCell[], voxelSize: number, variant: 
   };
 }
 
-function makeMaterial(v: VoxelSolidVariant, fg: string): Material {
+function makePageTexture(fg: string): ShaderMaterial {
+  return new ShaderMaterial({
+    uniforms: {
+      uColor:       { value: new Color(fg) },
+      uLineSpacing: { value: 0.18 },
+      uLineWidth:   { value: 0.06 },
+    },
+    vertexShader: pageTextureVert,
+    fragmentShader: pageTextureFrag,
+  });
+}
+
+function makeMaterial(v: VoxelSolidVariant, fg: string, _voxelSize: number): Material {
   const color = new Color(fg);
   switch (v) {
-    case "flat":   return new MeshBasicMaterial({ color });
-    case "shaded": return new MeshLambertMaterial({ color });
-    default:       return new MeshBasicMaterial({ color });
+    case "flat":         return new MeshBasicMaterial({ color });
+    case "shaded":       return new MeshLambertMaterial({ color });
+    case "page-texture": return makePageTexture(fg);
+    default:             return new MeshBasicMaterial({ color });
   }
 }
 
