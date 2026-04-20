@@ -5,6 +5,7 @@ import {
 import type { VoxelCell } from "./voxelize";
 import type { VoxelSolidVariant } from "./settings";
 import { pageTextureVert, pageTextureFrag } from "./shaders/page-texture.glsl";
+import { crosshatchVert, crosshatchFrag } from "./shaders/crosshatch.glsl";
 
 export interface VoxelMesh {
   mesh: InstancedMesh;
@@ -53,12 +54,25 @@ function makePageTexture(fg: string): ShaderMaterial {
   });
 }
 
+function makeCrosshatch(fg: string): ShaderMaterial {
+  return new ShaderMaterial({
+    uniforms: {
+      uColor:   { value: new Color(fg) },
+      uSpacing: { value: 0.12 },
+      uWidth:   { value: 0.04 },
+    },
+    vertexShader: crosshatchVert,
+    fragmentShader: crosshatchFrag,
+  });
+}
+
 function makeMaterial(v: VoxelSolidVariant, fg: string, _voxelSize: number): Material {
   const color = new Color(fg);
   switch (v) {
     case "flat":         return new MeshBasicMaterial({ color });
     case "shaded":       return new MeshLambertMaterial({ color });
     case "page-texture": return makePageTexture(fg);
+    case "crosshatch":   return makeCrosshatch(fg);
     default:             return new MeshBasicMaterial({ color });
   }
 }
