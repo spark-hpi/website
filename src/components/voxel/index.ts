@@ -5,7 +5,7 @@ import { createFrontFaceLines, createWireframeMesh } from "./skin-wireframe";
 import { chooseDepthScale, voxelize, type VoxelCell } from "./voxelize";
 import { distanceTransform } from "./distanceField";
 import { fetchPathD, rasterizeSvgPath } from "./rasterize";
-import { DEFAULTS, load as loadSettings, normalize, type VoxelSettings } from "./settings";
+import { DEFAULTS, load as loadSettings, normalize, SETTINGS_EVENT, type VoxelSettings, type VoxelSkin, type VoxelVariant } from "./settings";
 import { createVoxelBodies, makeFixedStep, stepPhysics, type VoxelBody } from "./physics";
 import { attachInput } from "./input";
 import { getMode, type ModeContext } from "./modes";
@@ -36,9 +36,10 @@ function supportsWebGL2(): boolean {
 }
 
 export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): VoxelHandle {
-  const settings: VoxelSettings = normalize({ ...loadSettings(), ...options.settings });
+  let settings: VoxelSettings = normalize({ ...loadSettings(), ...options.settings });
   const svgUrl = options.svgUrl ?? "/star_monocolor.svg";
   const budget = options.budget ?? 400;
+  const host = canvas.parentElement as HTMLElement;
 
   if (settings.variant === "liquid-glass" && !supportsWebGL2()) {
     console.warn("[voxel] liquid-glass requires WebGL2; falling back to shaded");
@@ -60,6 +61,8 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   let gridW = 0, gridH = 0, gridD = 0;
   let voxelSize = 0;
   let activeRef: ActiveSkin | null = null;
+  let activeSkin: VoxelSkin = settings.skin;
+  let activeVariant: VoxelVariant = settings.variant;
   let posBuffer: Float32Array | null = null;
   let bodies: VoxelBody[] = [];
   let baseHomes: Vector3[] = [];
@@ -68,6 +71,21 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   const ZERO = new Vector3();
   const noForce = () => ZERO;
   const fixedStep = makeFixedStep(1 / 60);
+
+  function buildActive(): ActiveSkin {
+    const fg = getComputedStyle(document.documentElement).getPropertyValue("--fg").trim() || "#11053b";
+    if (settings.skin === "wireframe" && settings.variant === "front-face") {
+      return { kind: "lines", handle: createFrontFaceLines(cells, voxelSize, fg) };
+    } else if (settings.skin === "wireframe") {
+      return { kind: "instanced", handle: createWireframeMesh(cells, voxelSize, settings.variant as import("./settings").VoxelWireframeVariant, fg) };
+    } else {
+      return { kind: "instanced", handle: createSolidMesh(cells, voxelSize, settings.variant as import("./settings").VoxelSolidVariant, fg) };
+    }
+  }
+
+  function buildCtx(dt: number): ModeContext {
+    return { bodies, input: input.state, root: scene.root, dt, voxelSize };
+  }
 
   (async () => {
     const { pathD, viewBox } = await fetchPathD(svgUrl);
@@ -95,37 +113,22 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
     seeds = cells.map((c) => c.seed);
     bodies = createVoxelBodies(homes);
 
-    const fg = getComputedStyle(document.documentElement).getPropertyValue("--fg").trim() || "#11053b";
-    let active: ActiveSkin;
-    if (settings.skin === "wireframe" && settings.variant === "front-face") {
-      const h = createFrontFaceLines(cells, voxelSize, fg);
-      scene.root.add(h.object);
-      active = { kind: "lines", handle: h };
-    } else if (settings.skin === "wireframe") {
-      const h = createWireframeMesh(cells, voxelSize, settings.variant as import("./settings").VoxelWireframeVariant, fg);
-      applyHomeMatrices(h.mesh, cells, voxelSize, gridW, gridH, gridD);
-      scene.root.add(h.mesh);
-      active = { kind: "instanced", handle: h };
+    activeRef = buildActive();
+    if (activeRef.kind === "instanced") {
+      applyHomeMatrices(activeRef.handle.mesh, cells, voxelSize, gridW, gridH, gridD);
+      scene.root.add(activeRef.handle.mesh);
     } else {
-      const h = createSolidMesh(cells, voxelSize, settings.variant as import("./settings").VoxelSolidVariant, fg);
-      applyHomeMatrices(h.mesh, cells, voxelSize, gridW, gridH, gridD);
-      scene.root.add(h.mesh);
-      active = { kind: "instanced", handle: h };
+      scene.root.add(activeRef.handle.object);
     }
+    activeSkin = settings.skin;
+    activeVariant = settings.variant;
     posBuffer = new Float32Array(cells.length * 3);
-    activeRef = active;
   })();
 
-  scene.start((dt) => {
+  const frameCb = (dt: number) => {
     if (!activeRef) return;
     const active = activeRef;
-    const ctx: ModeContext = {
-      bodies,
-      input: input.state,
-      root: scene.root,
-      dt,
-      voxelSize,
-    };
+    const ctx: ModeContext = buildCtx(dt);
     t += dt;
     applyIdle(settings.idle, { bodies, homes: baseHomes, seeds, voxelSize, root: scene.root, t });
     const mode = getMode(currentMode);
@@ -144,10 +147,57 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
       }
       active.handle.update(cells, posBuffer);
     }
-  });
+  };
+
+  scene.start(frameCb);
+
+  function applySettings(next: VoxelSettings) {
+    const oldMode = currentMode;
+    settings = next;
+    currentMode = next.mode;
+
+    if (next.enabled === false) {
+      canvas.style.display = "none";
+      host?.removeAttribute("data-ready");
+      scene.stop();
+      return;
+    } else {
+      canvas.style.display = "";
+      host?.setAttribute("data-ready", "true");
+      scene.start(frameCb);
+    }
+
+    if (bodies.length && oldMode !== next.mode) {
+      const ctx = buildCtx(0);
+      getMode(oldMode).onExit?.(ctx);
+      getMode(next.mode).onEnter?.(ctx);
+    }
+
+    if (activeRef && (activeSkin !== next.skin || activeVariant !== next.variant)) {
+      if (activeRef.kind === "instanced") scene.root.remove(activeRef.handle.mesh);
+      else                                scene.root.remove(activeRef.handle.object);
+      activeRef.handle.dispose();
+      activeRef = buildActive();
+      if (activeRef.kind === "instanced") {
+        applyHomeMatrices(activeRef.handle.mesh, cells, voxelSize, gridW, gridH, gridD);
+        scene.root.add(activeRef.handle.mesh);
+      } else {
+        scene.root.add(activeRef.handle.object);
+      }
+      activeSkin = next.skin;
+      activeVariant = next.variant;
+    }
+  }
+
+  const settingsListener = (e: Event) => {
+    const detail = (e as CustomEvent<VoxelSettings>).detail;
+    if (detail) applySettings(detail);
+  };
+  document.addEventListener(SETTINGS_EVENT, settingsListener);
 
   return {
     dispose() {
+      document.removeEventListener(SETTINGS_EVENT, settingsListener);
       input.dispose();
       if (activeRef) {
         if (activeRef.kind === "instanced") {
