@@ -1,10 +1,11 @@
-import { AmbientLight, DirectionalLight } from "three";
+import { AmbientLight, DirectionalLight, Matrix4, Object3D, Vector3 } from "three";
 import { createScene, type SceneHandle } from "./scene";
 import { applyHomeMatrices, createSolidMesh } from "./skin-solid";
 import { chooseDepthScale, voxelize, type VoxelCell } from "./voxelize";
 import { distanceTransform } from "./distanceField";
 import { fetchPathD, rasterizeSvgPath } from "./rasterize";
 import { DEFAULTS, load as loadSettings, normalize, type VoxelSettings } from "./settings";
+import { createVoxelBodies, makeFixedStep, stepPhysics, type VoxelBody } from "./physics";
 
 export type { VoxelSettings } from "./settings";
 export { DEFAULTS, load as loadSettings, save as saveSettings, SETTINGS_EVENT } from "./settings";
@@ -36,6 +37,10 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   let gridW = 0, gridH = 0, gridD = 0;
   let voxelSize = 0;
   let mesh: ReturnType<typeof createSolidMesh> | null = null;
+  let bodies: VoxelBody[] = [];
+  const ZERO = new Vector3();
+  const noForce = () => ZERO;
+  const fixedStep = makeFixedStep(1 / 60);
 
   (async () => {
     const { pathD, viewBox } = await fetchPathD(svgUrl);
@@ -54,6 +59,13 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
     gridD = cells.reduce((d, c) => Math.max(d, Math.abs(c.gz) * 2 + 1), 1);
     voxelSize = 2.0 / Math.max(gW, gH);
 
+    const homes = cells.map((c) => new Vector3(
+      (c.gx - gridW / 2 + 0.5) * voxelSize,
+      (gridH / 2 - c.gy - 0.5) * voxelSize,
+      (c.gz) * voxelSize,
+    ));
+    bodies = createVoxelBodies(homes);
+
     const fg = getComputedStyle(document.documentElement).getPropertyValue("--fg").trim() || "#11053b";
     const m = createSolidMesh(cells, voxelSize, "flat", fg);
     applyHomeMatrices(m.mesh, cells, voxelSize, gridW, gridH, gridD);
@@ -61,7 +73,13 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
     mesh = m;
   })();
 
-  scene.start(() => {});
+  scene.start((dt) => {
+    if (!mesh) return;
+    fixedStep(dt, () => {
+      stepPhysics(bodies, 1 / 60, noForce, { k: 40, c: 6 });
+    });
+    writeMatrices(mesh.mesh, bodies);
+  });
 
   return {
     dispose() {
@@ -72,4 +90,15 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
       scene.dispose();
     },
   };
+}
+
+const _tmp = new Object3D();
+function writeMatrices(m: import("three").InstancedMesh, bs: VoxelBody[]) {
+  for (let i = 0; i < bs.length; i++) {
+    _tmp.position.copy(bs[i].pos);
+    _tmp.rotation.set(bs[i].rot.x, bs[i].rot.y, bs[i].rot.z);
+    _tmp.updateMatrix();
+    m.setMatrixAt(i, _tmp.matrix);
+  }
+  m.instanceMatrix.needsUpdate = true;
 }
