@@ -1,0 +1,64 @@
+---
+import Base from "../layouts/Base.astro";
+import BackLink from "../components/BackLink.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Base title="Info — Spark">
+	<section class="info-page">
+		<BackLink href="/" label="Workshops" />
+		<article class="prose">
+			<h1>Info</h1>
+			<p>
+				Spark is a community for all kinds of makers from the Hasso
+				Plattner Institute.
+			</p>
+			<p>
+				The visual language owes a large debt to
+				<a
+					href="https://makingsoftware.com"
+					rel="noopener"
+					target="_blank">makingsoftware.com</a
+				>If you like how this site looks, read theirs too!
+			</p>
+			<p class="byline">made by VS</p>
+		</article>
+	</section>
+	<Footer />
+</Base>
+
+<style>
+	.info-page {
+		max-width: 1400px;
+		margin: 0 auto;
+		padding: 16px;
+	}
+	@media (min-width: 640px) {
+		.info-page {
+			padding: 32px;
+		}
+	}
+	.prose {
+		max-width: var(--content-w);
+		margin-top: 48px;
+	}
+	.prose h1 {
+		font-family: var(--serif);
+		font-size: 34px;
+		font-weight: 600;
+		line-height: 1.1;
+		letter-spacing: -0.01em;
+		margin: 0 0 24px;
+	}
+	.prose p {
+		margin: 16px 0;
+	}
+	.byline {
+		margin-top: 48px;
+		font-family: var(--mono);
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--muted);
+	}
+</style>

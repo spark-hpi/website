@@ -19,7 +19,7 @@
 		>
 	</span>
 	<div class="center"></div>
-	<span>VS</span>
+	<a class="info-link" href="/info">info</a>
 </footer>
 
 <div id="theme-edit-panel" role="dialog" aria-label="Color editor" hidden>
@@ -186,6 +186,17 @@
 	footer .edit:hover {
 		color: var(--fg);
 		border-color: var(--fg);
+	}
+	footer .info-link {
+		font-family: var(--mono);
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--muted);
+		text-decoration: none;
+	}
+	footer .info-link:hover {
+		color: var(--fg);
 	}
 
 	#theme-edit-panel {
@@ -511,6 +522,34 @@
 		if (e.key === "Escape" && !panel.hidden) close();
 	});
 
+	// While the panel is open, clicks outside dismiss it and don't activate
+	// whatever is underneath (e.g. a WorkshopCard link).
+	function outsidePanel(target: EventTarget | null): boolean {
+		if (!target || !(target instanceof Node)) return false;
+		return !panel.contains(target) && !btn.contains(target);
+	}
+	document.addEventListener(
+		"pointerdown",
+		(e) => {
+			if (panel.hidden) return;
+			if (!outsidePanel(e.target)) return;
+			e.preventDefault();
+			e.stopPropagation();
+			close();
+		},
+		true,
+	);
+	document.addEventListener(
+		"click",
+		(e) => {
+			if (panel.hidden) return;
+			if (!outsidePanel(e.target)) return;
+			e.preventDefault();
+			e.stopPropagation();
+		},
+		true,
+	);
+
 	// Reset current theme
 	resetBtn.addEventListener("click", () => {
 		const t = activeTheme();
@@ -569,7 +608,6 @@
 	// ── Voxel star panel ─────────────────────────────────────────
 	import {
 		type VoxelSettings,
-		type VoxelVariant,
 		DEFAULTS as VOX_DEFAULTS,
 		SETTINGS_EVENT as VOX_EVENT,
 		RANGES as VOX_RANGES,
@@ -581,18 +619,16 @@
 	type VoxNumKey = keyof typeof VOX_RANGES;
 
 	const voxMode = document.getElementById("vox-mode") as HTMLSelectElement | null;
-	const voxVariant = document.getElementById("vox-variant") as HTMLSelectElement | null;
 	const voxIdle = document.getElementById("vox-idle") as HTMLSelectElement | null;
 	const voxEdge = document.getElementById("vox-edge") as HTMLSelectElement | null;
 	const voxResetBtn = document.getElementById("vox-reset") as HTMLButtonElement | null;
 	const voxEnableBtns = document.querySelectorAll<HTMLButtonElement>("[data-voxel-enable]");
 
-	if (voxMode && voxVariant && voxIdle && voxEdge) {
+	if (voxMode && voxIdle && voxEdge) {
 		let state: VoxelSettings = voxLoad();
 
 		function reflect() {
 			voxMode!.value = state.mode;
-			voxVariant!.value = state.variant;
 			voxIdle!.value = state.idle;
 			voxEdge!.value = state.edge;
 			for (const b of voxEnableBtns) {
@@ -623,7 +659,6 @@
 		}
 
 		voxMode.addEventListener("change", () => commit({ mode: voxMode.value as VoxelSettings["mode"] }));
-		voxVariant.addEventListener("change", () => commit({ variant: voxVariant.value as VoxelVariant }));
 		voxIdle.addEventListener("change", () => commit({ idle: voxIdle.value as VoxelSettings["idle"] }));
 		voxEdge.addEventListener("change", () => commit({ edge: voxEdge.value as VoxelSettings["edge"] }));
 		for (const b of voxEnableBtns) {

@@ -8,6 +8,7 @@ import { visit } from "unist-util-visit";
 import type { Root as MdastRoot, Heading } from "mdast";
 import { remarkWikilinks, type WikiResolver } from "./remark-wikilinks";
 import { remarkCallouts } from "./remark-callouts";
+import { rehypeLinkPreviewKeys } from "./rehype-link-preview-keys";
 import { slugify, stripNumericPrefix, shortName } from "./slugify";
 import type { HierNode, Hierarchy } from "./hierarchy";
 import { extractToc, type TocItem } from "./extract-toc";
@@ -153,11 +154,138 @@ function addHeadingIds() {
   };
 }
 
+export interface LinkedPage {
+  title: string;
+  url: string;
+  parentTitle?: string;
+  headings: TocItem[];
+}
+
 export interface RenderedWorkshop {
   html: string;
   toc: TocItem[];
+  glossary: LinkedPage[];
   wordCount: number;
   pageCount: number;
+}
+
+const WIKI_NAME_RE = /(?<!!)\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]/g;
+const GLOSSARY_RE = /^glossary$/i;
+const HEADING_LINE_RE = /^(#{1,3})\s+(.+?)\s*$/;
+
+function extractSubheadings(raw: string | undefined, baseUrl: string): TocItem[] {
+  if (!raw) return [];
+  const out: TocItem[] = [];
+  let inFence = false;
+  for (const line of raw.split("\n")) {
+    if (/^```/.test(line.trim())) { inFence = !inFence; continue; }
+    if (inFence) continue;
+    const m = HEADING_LINE_RE.exec(line);
+    if (!m) continue;
+    const depth = m[1].length;
+    const text = m[2].replace(/\s*#+\s*$/, "").trim();
+    if (!text) continue;
+    out.push({
+      tier: (`h${depth}` as "h1" | "h2" | "h3"),
+      id: "",
+      text,
+      href: `${baseUrl}#${slugify(text)}`,
+    });
+  }
+  return out;
+}
+
+function nodeUrl(target: HierNode, hierarchy: Hierarchy): string {
+  const root = hierarchy.byFilename.get(target.workshopRootFilename)!;
+  const rootSlug = slugify(
+    root.title ?? stripNumericPrefix(shortName(root.filename)),
+  );
+  const targetSlug = slugify(
+    target.title ?? stripNumericPrefix(shortName(target.filename)),
+  );
+  if (target.depth === 0) return `/${rootSlug}`;
+  if (target.depth === 1) return `/${rootSlug}#${targetSlug}`;
+  return `/${rootSlug}/${targetSlug}`;
+}
+
+function collectLinkedPages(
+  sources: Array<string | undefined>,
+  excludeFilenames: Set<string>,
+  hierarchy: Hierarchy,
+): LinkedPage[] {
+  const seen = new Set<string>();
+  const out: LinkedPage[] = [];
+  for (const raw of sources) {
+    if (!raw) continue;
+    WIKI_NAME_RE.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = WIKI_NAME_RE.exec(raw)) !== null) {
+      const name = m[1].trim();
+      const target = hierarchy.byBasename.get(name);
+      if (!target) continue;
+      if (excludeFilenames.has(target.filename)) continue;
+      if (seen.has(target.filename)) continue;
+      seen.add(target.filename);
+      const title =
+        target.title ?? stripNumericPrefix(shortName(target.filename));
+      const parent = target.parent;
+      const parentTitle = parent
+        ? (parent.title ?? stripNumericPrefix(shortName(parent.filename)))
+        : undefined;
+      const url = nodeUrl(target, hierarchy);
+      const headings = extractSubheadings(target.rawContent, url);
+      out.push({ title, url, parentTitle, headings });
+    }
+  }
+  out.sort((a, b) => a.title.localeCompare(b.title));
+  return out;
+}
+
+function integrateLinkedIntoToc(
+  toc: TocItem[],
+  linked: LinkedPage[],
+): TocItem[] {
+  if (linked.length === 0) return toc;
+  const byChapter = new Map<string, LinkedPage[]>();
+  const trailing: LinkedPage[] = [];
+  for (const p of linked) {
+    if (p.parentTitle) {
+      const arr = byChapter.get(p.parentTitle) ?? [];
+      arr.push(p);
+      byChapter.set(p.parentTitle, arr);
+    } else {
+      trailing.push(p);
+    }
+  }
+  const out: TocItem[] = [];
+  let currentChapter: string | null = null;
+  const flush = () => {
+    if (!currentChapter) return;
+    const pages = byChapter.get(currentChapter);
+    if (!pages) return;
+    for (const p of pages) {
+      out.push({ tier: "h1", id: "", text: p.title, href: p.url, children: p.headings });
+    }
+    byChapter.delete(currentChapter);
+  };
+  for (const item of toc) {
+    if (item.tier === "chapter") {
+      flush();
+      currentChapter = item.text;
+    }
+    out.push(item);
+  }
+  flush();
+  // Any linked pages whose parent didn't match a chapter heading: append.
+  for (const pages of byChapter.values()) {
+    for (const p of pages) {
+      out.push({ tier: "h1", id: "", text: p.title, href: p.url, children: p.headings });
+    }
+  }
+  for (const p of trailing) {
+    out.push({ tier: "h1", id: "", text: p.title, href: p.url });
+  }
+  return out;
 }
 
 function workshopDir(filename: string): string | undefined {
@@ -172,6 +300,9 @@ export async function renderWorkshop(
   const resolver = buildWikiResolver(hierarchy);
   const dir = workshopDir(workshop.filename);
   const tree = assembleWorkshopTree(workshop);
+  const pageSlug = slugify(
+    workshop.title ?? stripNumericPrefix(shortName(workshop.filename)),
+  );
 
   const processor = unified()
     .use(remarkGfm)
@@ -181,15 +312,30 @@ export async function renderWorkshop(
     .use(addHeadingIds)
     .use(wrapTables)
     .use(transformImages, dir)
+    .use(rehypeLinkPreviewKeys, { pageSlug })
     .use(rehypeHighlight, { detect: true })
     .use(rehypeStringify, { allowDangerousHtml: true });
 
   const hast = await processor.run(tree as any);
   const html = processor.stringify(hast) as string;
-  const toc = extractToc(hast as any);
+  const rawToc = extractToc(hast as any);
   const wordCount = countWordsInTree(tree);
   const pageCount = 1 + workshop.children.length;
-  return { html, toc, wordCount, pageCount };
+  // Exclude the workshop itself and its direct chapter children (those are
+  // already inlined as chapters in the body). Grandchildren (depth-2
+  // subpages like "proxmox") live at their own URLs and flow into the TOC
+  // beneath their parent chapter.
+  const exclude = new Set<string>([workshop.filename]);
+  for (const c of workshop.children) exclude.add(c.filename);
+  const linkedPages = collectLinkedPages(
+    [workshop.rawContent, ...workshop.children.map((c) => c.rawContent)],
+    exclude,
+    hierarchy,
+  );
+  const glossary = linkedPages.filter((p) => GLOSSARY_RE.test(p.title));
+  const regular = linkedPages.filter((p) => !GLOSSARY_RE.test(p.title));
+  const toc = integrateLinkedIntoToc(rawToc, regular);
+  return { html, toc, glossary, wordCount, pageCount };
 }
 
 export async function renderSubpage(
@@ -200,6 +346,14 @@ export async function renderSubpage(
   const md = page.rawContent ?? "";
   const dir = workshopDir(page.filename);
   const tree = parseMarkdown(md);
+  const root = hierarchy.byFilename.get(page.workshopRootFilename)!;
+  const wsSlug = slugify(
+    root.title ?? stripNumericPrefix(shortName(root.filename)),
+  );
+  const subSlug = slugify(
+    page.title ?? stripNumericPrefix(shortName(page.filename)),
+  );
+  const pageSlug = `${wsSlug}/${subSlug}`;
 
   const processor = unified()
     .use(remarkGfm)
@@ -209,14 +363,25 @@ export async function renderSubpage(
     .use(addHeadingIds)
     .use(wrapTables)
     .use(transformImages, dir)
+    .use(rehypeLinkPreviewKeys, { pageSlug })
     .use(rehypeHighlight, { detect: true })
     .use(rehypeStringify, { allowDangerousHtml: true });
 
   const hast = await processor.run(tree as any);
   const html = processor.stringify(hast) as string;
+  const rawToc = extractToc(hast as any);
+  const linkedPages = collectLinkedPages(
+    [page.rawContent],
+    new Set<string>([page.filename]),
+    hierarchy,
+  );
+  const glossary = linkedPages.filter((p) => GLOSSARY_RE.test(p.title));
+  const regular = linkedPages.filter((p) => !GLOSSARY_RE.test(p.title));
+  const toc = integrateLinkedIntoToc(rawToc, regular);
   return {
     html,
-    toc: extractToc(hast as any),
+    toc,
+    glossary,
     wordCount: countWordsInTree(tree),
     pageCount: 1,
   };

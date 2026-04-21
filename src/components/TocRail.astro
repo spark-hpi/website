@@ -1,18 +1,124 @@
 ---
 import type { TocItem } from "../lib/extract-toc";
+import type { LinkedPage } from "../lib/render-workshop";
 export type { TocItem };
-interface Props { items: TocItem[] }
-const { items } = Astro.props;
+interface Props { items: TocItem[]; glossary?: LinkedPage[] }
+const { items, glossary = [] } = Astro.props;
+
+// Group the flat TOC into chapter groups. A "chapter heading" is a
+// tier-chapter item whose id is a real in-page heading (no href override).
+// Items that have a `href` are linked subpages and get split into a separate
+// "linked" bucket inside the chapter group.
+type Group = { chapter: TocItem | null; items: TocItem[]; linked: TocItem[] };
+const groups: Group[] = [];
+let cur: Group = { chapter: null, items: [], linked: [] };
+for (const it of items) {
+  const isChapterHeading = it.tier === "chapter" && !it.href;
+  if (isChapterHeading) {
+    if (cur.chapter || cur.items.length || cur.linked.length) groups.push(cur);
+    cur = { chapter: it, items: [], linked: [] };
+  } else if (it.href) {
+    cur.linked.push(it);
+  } else {
+    cur.items.push(it);
+  }
+}
+if (cur.chapter || cur.items.length || cur.linked.length) groups.push(cur);
 ---
 <nav class="toc" aria-label="On this page">
   <span class="label">On this page</span>
-  <ul>
-    {items.map((it) => (
-      <li class={`tier-${it.tier}`}>
-        <a href={`#${it.id}`} data-toc-link={it.id}>{it.text}</a>
-      </li>
+  <ul class="chapters">
+    {groups.map((g) => (
+      g.chapter ? (
+        (g.items.length > 0 || g.linked.length > 0) ? (
+          <li class="chapter-group">
+            <details>
+              <summary>
+                <span class="arrow" aria-hidden="true">&gt;</span>
+                <span class="chapter-text" data-toc-link={g.chapter.id}>{g.chapter.text}</span>
+              </summary>
+              <div class="chapter-body">
+                {g.items.length > 0 && (
+                  <ul class="chapter-items">
+                    {g.items.map((it) => (
+                      <li class={`tier-${it.tier}`}>
+                        <a
+                          href={it.href ?? `#${it.id}`}
+                          {...(it.href ? {} : { "data-toc-link": it.id })}
+                        >{it.text}</a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {g.linked.length > 0 && (
+                  <details class="linked-block">
+                    <summary>
+                      <span class="arrow" aria-hidden="true">&gt;</span>
+                      <span class="linked-label">Options</span>
+                    </summary>
+                    <ul class="linked-items">
+                      {g.linked.map((it) => (
+                        <li class="linked-item">
+                          {it.children && it.children.length > 0 ? (
+                            <details class="linked-details">
+                              <summary>
+                                <span class="arrow" aria-hidden="true">&gt;</span>
+                                <a class="linked-title" href={it.href}>{it.text}</a>
+                              </summary>
+                              <ul class="linked-sub">
+                                {it.children.map((c) => (
+                                  <li class={`tier-${c.tier}`}>
+                                    <a href={c.href}>{c.text}</a>
+                                  </li>
+                                ))}
+                              </ul>
+                            </details>
+                          ) : (
+                            <div class="linked-row">
+                              <span class="arrow arrow-placeholder" aria-hidden="true"></span>
+                              <a class="linked-title" href={it.href}>{it.text}</a>
+                            </div>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </div>
+            </details>
+          </li>
+        ) : (
+          <li class="chapter-group chapter-leaf">
+            <a class="chapter-text" href={`#${g.chapter.id}`} data-toc-link={g.chapter.id}>
+              <span class="arrow arrow-placeholder" aria-hidden="true"></span>
+              <span>{g.chapter.text}</span>
+            </a>
+          </li>
+        )
+      ) : (
+        g.items.map((it) => (
+          <li class={`tier-${it.tier}`}>
+            <a
+              href={it.href ?? `#${it.id}`}
+              {...(it.href ? {} : { "data-toc-link": it.id })}
+            >{it.text}</a>
+          </li>
+        ))
+      )
     ))}
   </ul>
+  {glossary.length > 0 && (
+    <>
+      <hr class="glossary-rule" />
+      <ul class="glossary">
+        {glossary.map((g) => (
+          <li>
+            <a href={g.url}>{g.title}</a>
+          </li>
+        ))}
+      </ul>
+    </>
+  )}
 </nav>
 
 <style>
@@ -29,26 +135,18 @@ const { items } = Astro.props;
     text-transform: uppercase; letter-spacing: 0.08em;
     color: var(--muted);
   }
-  .toc ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .toc ul { list-style: none; padding: 0; margin: 0; }
+  .toc .chapters { display: grid; gap: 8px; }
+
   .toc a {
     color: color-mix(in oklab, var(--fg) 75%, var(--bg));
     text-decoration: none;
-    display: block; line-height: 1.4;
-  }
-  .toc a:hover { color: var(--link); }
-  .toc li.active a { color: var(--link); }
-
-  /* Tier styles — chapter (mono small caps), then serif hierarchy */
-  .toc li.tier-chapter a {
-    font-family: var(--mono); font-size: 11px;
-    text-transform: uppercase; letter-spacing: 0.08em;
-    color: var(--fg); font-weight: 600;
-    margin-top: 12px;
+    display: inline-block; line-height: 1.4;
     position: relative;
     width: fit-content;
+    max-width: 100%;
   }
-  .toc li.tier-chapter:first-child a { margin-top: 0; }
-  .toc li.tier-chapter a::after {
+  .toc a::after {
     content: "";
     position: absolute;
     left: 0; right: 0; bottom: -3px;
@@ -58,7 +156,84 @@ const { items } = Astro.props;
     transform-origin: left center;
     transition: transform 300ms ease;
   }
-  .toc li.tier-chapter.in-chapter a::after { transform: scaleX(1); }
+  .toc a:hover::after { transform: scaleX(1); }
+  .toc a:hover { color: var(--link); }
+  .toc li.active > a { color: var(--link); }
+
+  /* Chapter group (mono, always visible; contents collapsible). */
+  .toc .chapter-group { padding: 0; }
+  .toc details > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    user-select: none;
+  }
+  .toc details > summary::-webkit-details-marker { display: none; }
+  /* Outer (chapter) summary is sticky; inner linked summaries are not. */
+  .toc .chapter-group > details > summary {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bg);
+    padding: 4px 0;
+  }
+  .toc .chapter-group > details > summary::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    bottom: -12px;
+    height: 12px;
+    background: linear-gradient(var(--bg), color-mix(in oklab, var(--bg) 0%, transparent));
+    pointer-events: none;
+  }
+
+  .toc .chapter-text,
+  .toc .chapter-leaf > a {
+    font-family: var(--mono); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--fg); font-weight: 600;
+  }
+  .toc details > summary .chapter-text {
+    position: relative;
+  }
+  .toc details > summary .chapter-text::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -3px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 300ms ease;
+  }
+  .toc details > summary:hover .chapter-text::after,
+  .toc .chapter-group.in-chapter details > summary .chapter-text::after {
+    transform: scaleX(1);
+  }
+  .toc .chapter-leaf > a {
+    display: inline-flex; align-items: baseline; gap: 6px;
+  }
+
+  .toc .arrow {
+    display: inline-block;
+    font-family: "Departure Mono", var(--mono);
+    font-size: 11px;
+    width: 10px;
+    line-height: 1;
+    transition: transform 180ms ease;
+    transform-origin: 50% 50%;
+    color: var(--muted);
+  }
+  .toc details[open] > summary .arrow { transform: rotate(90deg); }
+  .toc .arrow-placeholder::before { content: ""; }
+
+  .toc .chapter-body { margin-top: 8px; }
+  .toc .chapter-items {
+    padding-left: 16px;
+    display: grid; gap: 6px;
+  }
   .toc li.tier-h1 a {
     font-family: var(--serif); font-size: 15px; font-weight: 600;
     color: var(--fg);
@@ -70,5 +245,56 @@ const { items } = Astro.props;
   .toc li.tier-h3 a {
     font-family: var(--serif); font-size: 13px; font-weight: 400;
     padding-left: 28px;
+  }
+
+  /* Linked block inside a chapter group. Collapsed by default; clicking the
+     "Linked" garamond title expands to reveal each linked subpage, each of
+     which is itself a collapsible details with its own sub-headings. */
+  .toc .linked-block {
+    margin-top: 10px;
+    padding-left: 16px;
+  }
+  .toc .linked-block > summary {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .toc .linked-label,
+  .toc .linked-title {
+    font-family: var(--serif); font-size: 14px; font-weight: 500;
+    color: var(--muted);
+  }
+  .toc .linked-items {
+    margin-top: 6px;
+    padding-left: 14px;
+    display: grid; gap: 6px;
+  }
+  .toc .linked-item { list-style: none; }
+  .toc .linked-row { display: inline-flex; align-items: baseline; gap: 6px; }
+  .toc .linked-details > summary {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  /* No animated underline on linked titles per spec. */
+  .toc .linked-title::after,
+  .toc .linked-label::after { content: none !important; }
+  .toc .linked-title:hover { color: var(--fg); }
+  .toc .linked-sub {
+    margin-top: 6px;
+    padding-left: 14px;
+    display: grid; gap: 6px;
+  }
+
+  /* Glossary — separated by a dashed rule at the bottom of the rail. */
+  .toc .glossary-rule {
+    margin: 24px 0 12px;
+    border: 0;
+    border-top: 1px dashed var(--rule);
+  }
+  .toc .glossary a {
+    font-family: var(--mono); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--fg); font-weight: 600;
   }
 </style>

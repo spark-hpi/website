@@ -5,6 +5,11 @@ export interface TocItem {
   tier: "chapter" | "h1" | "h2" | "h3";
   id: string;
   text: string;
+  // Optional absolute href override (used for linked subpages that live on
+  // their own URL rather than as a heading on the current page).
+  href?: string;
+  // Optional child entries (used for linked subpages' own headings).
+  children?: TocItem[];
 }
 
 const HEADING_TAGS = new Set(["h1", "h2", "h3"]);

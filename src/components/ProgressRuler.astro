@@ -28,18 +28,46 @@
     let activeId: string | null = null;
     let activeChapter: string | null = null;
 
+    function scrollTocInto(el: HTMLElement | null | undefined) {
+      if (!el) return;
+      const container = el.closest<HTMLElement>(".toc");
+      if (!container) return;
+      // Only scroll if the container itself is scrollable.
+      if (container.scrollHeight <= container.clientHeight) return;
+      const er = el.getBoundingClientRect();
+      const cr = container.getBoundingClientRect();
+      const pad = 12;
+      if (er.top < cr.top + pad) {
+        container.scrollTop += er.top - cr.top - pad;
+      } else if (er.bottom > cr.bottom - pad) {
+        container.scrollTop += er.bottom - cr.bottom + pad;
+      }
+    }
+
+    function liFor(id: string | null): HTMLElement | null {
+      if (!id) return null;
+      return tocLinks.get(id)?.closest<HTMLElement>("li") ?? null;
+    }
+
     function setActive(id: string | null) {
       if (activeId === id) return;
-      if (activeId) tocLinks.get(activeId)?.parentElement?.classList.remove("active");
+      liFor(activeId)?.classList.remove("active");
       activeId = id;
-      if (id) tocLinks.get(id)?.parentElement?.classList.add("active");
+      liFor(id)?.classList.add("active");
 
       const newChapter = id ? headingToChapter.get(id) ?? null : null;
       if (newChapter !== activeChapter) {
-        if (activeChapter) tocLinks.get(activeChapter)?.parentElement?.classList.remove("in-chapter");
+        liFor(activeChapter)?.classList.remove("in-chapter");
         activeChapter = newChapter;
-        if (activeChapter) tocLinks.get(activeChapter)?.parentElement?.classList.add("in-chapter");
+        liFor(activeChapter)?.classList.add("in-chapter");
+        // Auto-expand the active chapter's details; leave others as user left.
+        const chapterLi = liFor(activeChapter);
+        const det = chapterLi?.querySelector<HTMLDetailsElement>("details");
+        if (det && !det.open) det.open = true;
       }
+
+      const targetEl = liFor(id) ?? liFor(activeChapter);
+      scrollTocInto(targetEl);
     }
 
     const observer = new IntersectionObserver(

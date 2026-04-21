@@ -40,7 +40,7 @@ const rendered = await renderSubpage(node, hierarchy);
       <h1>{subTitle}</h1>
     </header>
     <div class="ws-body">
-      <TocRail items={rendered.toc} />
+      <TocRail items={rendered.toc} glossary={rendered.glossary} />
       <article class="prose" set:html={rendered.html}></article>
     </div>
   </section>
