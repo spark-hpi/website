@@ -18,7 +18,7 @@ describe("explode", () => {
     const b = body([1, 0, 0]);
     explodeMode.beforeStep!({
       bodies: [b],
-      input: { cursorWorld: null, justClicked: true, lastClickWorld: new Vector3(0, 0, 0) },
+      input: { cursorWorld: null, justClicked: true, lastClickWorld: new Vector3(0, 0, 0), cursorSpeed: 0, lastClickSpeed: 0 },
       root: null as never,
       dt: 1 / 60,
       voxelSize: 0.05,
@@ -31,7 +31,7 @@ describe("explode", () => {
     const b = body([1, 0, 0]);
     explodeMode.beforeStep!({
       bodies: [b],
-      input: { cursorWorld: null, justClicked: false, lastClickWorld: null },
+      input: { cursorWorld: null, justClicked: false, lastClickWorld: null, cursorSpeed: 0, lastClickSpeed: 0 },
       root: null as never,
       dt: 1 / 60,
       voxelSize: 0.05,
@@ -43,7 +43,7 @@ describe("explode", () => {
     const b = body([1, 0, 0]);
     const f = explodeMode.force(b, {
       bodies: [b],
-      input: { cursorWorld: null, justClicked: false, lastClickWorld: null },
+      input: { cursorWorld: null, justClicked: false, lastClickWorld: null, cursorSpeed: 0, lastClickSpeed: 0 },
       root: null as never,
       dt: 1 / 60,
       voxelSize: 0.05,

@@ -12,6 +12,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "deploy": "astro build && wrangler pages deploy dist --project-name=spark",
+    "refresh-link-previews": "rm -f src/data/link-previews.json && echo '{}' > src/data/link-previews.json",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
   },

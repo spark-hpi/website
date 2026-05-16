@@ -7,7 +7,7 @@
 	--muted: color-mix(in oklab, var(--fg) 50%, var(--bg));
 	--muted-2: color-mix(in oklab, var(--fg) 25%, var(--bg));
 	--rule: color-mix(in oklab, var(--fg) 60%, var(--bg));
-	--texture: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='3' height='3'><line x1='0' y1='0' x2='0' y2='1' stroke='%230E003B' stroke-opacity='0.7' stroke-width='1'/></svg>");
+	--texture: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='3' height='3'><line x1='0' y1='0' x2='0' y2='1' stroke='%230E003B' stroke-opacity='0.5' stroke-width='1'/></svg>");
 	--content-w: 720px;
 	--serif:
 		"EB Garamond", "Iowan Old Style", Garamond, "Times New Roman", serif;
@@ -470,16 +470,55 @@ code.hljs {
 
 /* Per-type accents + Departure Mono glyph mapping.
    Each glyph below is verified to exist in DepartureMono-Regular.woff2. */
-.callout-note     { --callout-accent: #5b8def; --callout-glyph: "✦"; }
-.callout-info     { --callout-accent: #3b82f6; --callout-glyph: "◊"; }
-.callout-tip      { --callout-accent: #0ea47a; --callout-glyph: "★"; }
-.callout-success  { --callout-accent: #16a34a; --callout-glyph: "→"; }
-.callout-warning  { --callout-accent: #d97706; --callout-glyph: "▲"; }
-.callout-failure  { --callout-accent: #dc2626; --callout-glyph: "×"; }
-.callout-danger   { --callout-accent: #dc2626; --callout-glyph: "!"; }
-.callout-bug      { --callout-accent: #b91c1c; --callout-glyph: "■"; }
-.callout-example  { --callout-accent: #7c3aed; --callout-glyph: "►"; }
-.callout-quote    { --callout-accent: #6b7280; --callout-glyph: "“"; }
-.callout-abstract { --callout-accent: #0891b2; --callout-glyph: "◌"; }
-.callout-todo     { --callout-accent: #2563eb; --callout-glyph: "□"; }
-.callout-question { --callout-accent: #7c3aed; --callout-glyph: "?"; }
+.callout-note {
+	--callout-accent: #5b8def;
+	--callout-glyph: "✦";
+}
+.callout-info {
+	--callout-accent: #3b82f6;
+	--callout-glyph: "◊";
+}
+.callout-tip {
+	--callout-accent: #0ea47a;
+	--callout-glyph: "★";
+}
+.callout-success {
+	--callout-accent: #16a34a;
+	--callout-glyph: "→";
+}
+.callout-warning {
+	--callout-accent: #d97706;
+	--callout-glyph: "▲";
+}
+.callout-failure {
+	--callout-accent: #dc2626;
+	--callout-glyph: "×";
+}
+.callout-danger {
+	--callout-accent: #dc2626;
+	--callout-glyph: "!";
+}
+.callout-bug {
+	--callout-accent: #b91c1c;
+	--callout-glyph: "■";
+}
+.callout-example {
+	--callout-accent: #7c3aed;
+	--callout-glyph: "►";
+}
+.callout-quote {
+	--callout-accent: #6b7280;
+	--callout-glyph: "“";
+}
+.callout-abstract {
+	--callout-accent: #0891b2;
+	--callout-glyph: "◌";
+}
+.callout-todo {
+	--callout-accent: #2563eb;
+	--callout-glyph: "□";
+}
+.callout-question {
+	--callout-accent: #7c3aed;
+	--callout-glyph: "?";
+}

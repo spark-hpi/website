@@ -12,7 +12,7 @@ describe("gravity", () => {
     const b = body([0, 0, 0]);
     const f = gravityMode.force(b, {
       bodies: [b],
-      input: { cursorWorld: null, justClicked: false, lastClickWorld: null },
+      input: { cursorWorld: null, justClicked: false, lastClickWorld: null, cursorSpeed: 0, lastClickSpeed: 0 },
       root: null as never, dt: 1 / 60, voxelSize: 0.05,
     });
     expect(f.y).toBeLessThan(0);
@@ -22,12 +22,12 @@ describe("gravity", () => {
     const b = body([0, 0, 0]);
     const far = gravityMode.force(b, {
       bodies: [b],
-      input: { cursorWorld: new Vector3(10, 0, 0), justClicked: false, lastClickWorld: null },
+      input: { cursorWorld: new Vector3(10, 0, 0), justClicked: false, lastClickWorld: null, cursorSpeed: 0, lastClickSpeed: 0 },
       root: null as never, dt: 1 / 60, voxelSize: 0.05,
     }).clone();
     const near = gravityMode.force(b, {
       bodies: [b],
-      input: { cursorWorld: new Vector3(0, 0, 0), justClicked: false, lastClickWorld: null },
+      input: { cursorWorld: new Vector3(0, 0, 0), justClicked: false, lastClickWorld: null, cursorSpeed: 0, lastClickSpeed: 0 },
       root: null as never, dt: 1 / 60, voxelSize: 0.05,
     }).clone();
     expect(near.equals(far)).toBe(false);

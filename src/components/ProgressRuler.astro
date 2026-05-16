@@ -32,7 +32,6 @@
       if (!el) return;
       const container = el.closest<HTMLElement>(".toc");
       if (!container) return;
-      // Only scroll if the container itself is scrollable.
       if (container.scrollHeight <= container.clientHeight) return;
       const er = el.getBoundingClientRect();
       const cr = container.getBoundingClientRect();
@@ -44,6 +43,20 @@
       }
     }
 
+    // IDE-style: smooth-scroll the TOC so the active chapter's group sits at
+    // the top of the rail (its sticky mono summary then pins there).
+    function pinChapterAtTop(chapterLi: HTMLElement | null | undefined) {
+      if (!chapterLi) return;
+      const container = chapterLi.closest<HTMLElement>(".toc");
+      if (!container) return;
+      if (container.scrollHeight <= container.clientHeight) return;
+      const top =
+        chapterLi.getBoundingClientRect().top -
+        container.getBoundingClientRect().top +
+        container.scrollTop;
+      container.scrollTo({ top, behavior: "smooth" });
+    }
+
     function liFor(id: string | null): HTMLElement | null {
       if (!id) return null;
       return tocLinks.get(id)?.closest<HTMLElement>("li") ?? null;
@@ -53,21 +66,33 @@
       if (activeId === id) return;
       liFor(activeId)?.classList.remove("active");
       activeId = id;
-      liFor(id)?.classList.add("active");
+      const activeLi = liFor(id);
+      activeLi?.classList.add("active");
 
       const newChapter = id ? headingToChapter.get(id) ?? null : null;
       if (newChapter !== activeChapter) {
         liFor(activeChapter)?.classList.remove("in-chapter");
         activeChapter = newChapter;
-        liFor(activeChapter)?.classList.add("in-chapter");
-        // Auto-expand the active chapter's details; leave others as user left.
         const chapterLi = liFor(activeChapter);
+        chapterLi?.classList.add("in-chapter");
+        // Auto-expand the active chapter's details and pin it to the top.
         const det = chapterLi?.querySelector<HTMLDetailsElement>("details");
         if (det && !det.open) det.open = true;
+        pinChapterAtTop(chapterLi);
       }
 
-      const targetEl = liFor(id) ?? liFor(activeChapter);
-      scrollTocInto(targetEl);
+      // Robust fallback: ensure every ancestor <details> of the active TOC
+      // entry is open (covers chapters whose divider id doesn't match the
+      // fast-path chapter lookup for whatever reason).
+      let el: HTMLElement | null = activeLi ?? null;
+      while (el) {
+        const d = el.closest<HTMLDetailsElement>("details");
+        if (!d) break;
+        if (!d.open) d.open = true;
+        el = d.parentElement;
+      }
+
+      scrollTocInto(activeLi ?? liFor(activeChapter));
     }
 
     const observer = new IntersectionObserver(

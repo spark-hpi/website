@@ -1,0 +1,215 @@
+{
+  "https://app.netbird.io": {
+    "title": "NetBird Dashboard",
+    "description": "NetBird combines a configuration-free peer-to-peer private network and a centralized access control system in a single open-source platform",
+    "fetchedAt": 1776714008860
+  },
+  "https://docs.docker.com/desktop/setup/install/windows-install/": {
+    "title": "Windows",
+    "description": "Get started with Docker for Windows. This guide covers system requirements, where to download, and instructions on how to install and update.",
+    "image": "https://docs.docker.com/images/thumbnail.webp",
+    "fetchedAt": 1776714008860
+  },
+  "https://docs.docker.com/reference/compose-file/": {
+    "title": "Compose file reference",
+    "description": "Find the latest recommended version of the Docker Compose file format for defining multi-container applications.",
+    "image": "https://docs.docker.com/images/thumbnail.webp",
+    "fetchedAt": 1777377577213
+  },
+  "https://en.wikipedia.org/wiki/Man-in-the-middle_attack": {
+    "title": "Man-in-the-middle attack - Wikipedia",
+    "fetchedAt": 1776714008860
+  },
+  "https://etcher.balena.io/": {
+    "title": "balenaEtcher - Flash OS images to SD cards & USB drives",
+    "description": "A cross-platform tool to flash OS images onto SD cards and USB drives safely and easily. Free and open source for makers around the world.",
+    "image": "https://uploads-ssl.webflow.com/636ab6ba0e1bd250e3aaedaf/65ef146b4576693f0c5d825b_OG%20image.png",
+    "fetchedAt": 1776714008860
+  },
+  "https://github.com/raspberrypi/rpi-imager/releases/tag/v1.9.6": {
+    "title": "Release v1.9.6 · raspberrypi/rpi-imager",
+    "description": "What's Changed\n\nREADME: Fix script name typo by @ahresse in #1114\nUpdated Russian translations by @nafanz in #1118\nItalian language update by @bovirus in #1112\n1.9.6: Fix roll-up by @tdewey-rpi in ...",
+    "image": "https://opengraph.githubassets.com/d68f48d23d5884cca49e47bbc3bdc7e1b57fa40ecb3740f3d3dfa6c6f07e4417/raspberrypi/rpi-imager/releases/tag/v1.9.6",
+    "fetchedAt": 1777377577213
+  },
+  "https://hub.docker.com/": {
+    "title": "Docker Hub Container Image Library | App Containerization",
+    "description": "Welcome to the world's largest container registry built for developers and open source contributors to find, use, and share their container images. Build, push and pull.",
+    "image": "https://dockerstatic.com/hub-ui/kzxxphbs.png",
+    "fetchedAt": 1776714008860
+  },
+  "https://jlcpcb.com": {
+    "title": "PCB Prototype & PCB Fabrication Manufacturer - JLCPCB",
+    "description": "Instant online PCB quote, get PCBs for only $2. Check design with the online gerber viewer, Easy and quick PCB Price Calculator from JLCPCB",
+    "image": "https://jlcpcb.com/logo-og.png",
+    "fetchedAt": 1777377577213
+  },
+  "https://makerworld.com/en": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://netbird.io": {
+    "title": "NetBird - Open Source Zero Trust Networking",
+    "description": "WireGuard®-based overlay network and Zero Trust Network Access in one platform for reliable and secure connectivity",
+    "fetchedAt": 1776714008860
+  },
+  "https://orbstack.dev/": {
+    "title": "OrbStack · Fast, light, simple Docker & Linux",
+    "description": "Say goodbye to slow, clunky containers and VMs. The fast, light, and easy way to run containers and Linux. Develop at lightspeed with our Docker Desktop alternative.",
+    "image": "https://orbstack.dev/img/icon-square256.png",
+    "fetchedAt": 1776714008860
+  },
+  "https://proxmox.com/en/downloads/proxmox-virtual-environment": {
+    "title": "Downloads",
+    "image": "https://www.proxmox.com/images/proxmox/Proxmox-logo-stacked-1240.png",
+    "fetchedAt": 1776775628275
+  },
+  "https://www.home-assistant.io/": {
+    "title": "Home Assistant",
+    "description": "Open source home automation that puts local control and privacy first. Powered by a worldwide community of tinkerers and DIY enthusiasts. Perfect to run on a Raspberry Pi or a local server.",
+    "image": "https://www.home-assistant.io/images/default-social.png",
+    "fetchedAt": 1776714008860
+  },
+  "https://www.raspberrypi.com/software/": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.reichelt.de": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.thingiverse.com": {
+    "title": "Thingiverse - The community for Open Hardware",
+    "description": "Thingiverse - The community for Open Hardware",
+    "image": "https://cdn.thingiverse.com/site/img/ThingiverseOpenGraph.webp",
+    "fetchedAt": 1777377577213
+  },
+  "https://www.yeggi.com": {
+    "title": "Please wait a moment while we check whether you are human or a bot. You will then be automatically redirected.",
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@BenVallack": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@BennJordan": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@CheeseTurbulence": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@DIYPerks": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@Engineezy": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@ExcessiveOverkill": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@HTXStudio": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@INSIDEVERYTHING1": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@JeffGeerling": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@KnowArt": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@MadeByDennis": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@MadeWithLayers": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@PosyMusic": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@StuffMadeHere": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@TechnologyConnections": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@TheStockPot-AU/videos": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@ThisDoesNotCompute": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@axiometa": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@bitluni": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@f4micom/videos": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@flurples": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@greatscottlab": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@henry_kidman": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@henryseg": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@matthewlim88": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@mediacccde": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@pierogiengineering": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@salimbenbouz": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@soiboisoft": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@styropyro": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  },
+  "https://www.youtube.com/@worksbydesign": {
+    "failed": true,
+    "fetchedAt": 1777377577213
+  }
+}

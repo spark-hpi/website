@@ -13,14 +13,21 @@ function randUnit(v: Vector3): Vector3 {
   return v;
 }
 
+// Flick-click → bigger boom. Gentle click → softer pop.
+// Maps click-time cursor speed to a 0.6×–3.5× multiplier.
+function clickBoost(speed: number): number {
+  return 0.6 + 2.9 * (speed / (speed + 1.5));
+}
+
 export const explodeMode: Mode = {
-  params: { impulseScale: 1.0, angularImpulse: 2.0 },
+  params: { impulseScale: 2.2, angularImpulse: 3.5 },
   force: () => ZERO,
   beforeStep(ctx: ModeContext) {
     if (!ctx.input.justClicked || !ctx.input.lastClickWorld) return;
     const click = ctx.input.lastClickWorld;
-    const s = this.params!.impulseScale;
-    const a = this.params!.angularImpulse;
+    const boost = clickBoost(ctx.input.lastClickSpeed);
+    const s = this.params!.impulseScale * boost;
+    const a = this.params!.angularImpulse * boost;
     for (const b of ctx.bodies) {
       _dir.subVectors(b.pos, click);
       const d = _dir.length();

@@ -16,7 +16,7 @@ describe("repel", () => {
     const b = body([0.1, 0, 0]);
     const f = repelMode.force(b, {
       bodies: [b],
-      input: { cursorWorld: new Vector3(0, 0, 0), justClicked: false, lastClickWorld: null },
+      input: { cursorWorld: new Vector3(0, 0, 0), justClicked: false, lastClickWorld: null, cursorSpeed: 0, lastClickSpeed: 0 },
       root: null as never,
       dt: 1 / 60,
       voxelSize: 0.05,
@@ -28,7 +28,7 @@ describe("repel", () => {
     const b = body([2, 0, 0]);
     const f = repelMode.force(b, {
       bodies: [b],
-      input: { cursorWorld: new Vector3(0, 0, 0), justClicked: false, lastClickWorld: null },
+      input: { cursorWorld: new Vector3(0, 0, 0), justClicked: false, lastClickWorld: null, cursorSpeed: 0, lastClickSpeed: 0 },
       root: null as never,
       dt: 1 / 60,
       voxelSize: 0.05,
@@ -40,7 +40,7 @@ describe("repel", () => {
     const b = body([0.1, 0, 0]);
     const f = repelMode.force(b, {
       bodies: [b],
-      input: { cursorWorld: null, justClicked: false, lastClickWorld: null },
+      input: { cursorWorld: null, justClicked: false, lastClickWorld: null, cursorSpeed: 0, lastClickSpeed: 0 },
       root: null as never,
       dt: 1 / 60,
       voxelSize: 0.05,

@@ -56,8 +56,8 @@ function forceReducedMotion(s: VoxelSettings): VoxelSettings {
 
 function applyTuning(s: VoxelSettings): void {
   const k = s.strength;
-  explodeMode.params!.impulseScale   = 1.0 * k;
-  explodeMode.params!.angularImpulse = 2.0 * k;
+  explodeMode.params!.impulseScale   = 2.2 * k;
+  explodeMode.params!.angularImpulse = 3.5 * k;
   repelMode.params!.strength         = 30  * k;
   magnetMode.params!.strength        = 60  * k;
   tiltMode.params!.maxTiltY          = 0.6 * k;
@@ -229,7 +229,7 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
         mass: settings.mass,
       });
     });
-    input.endFrame();
+    input.endFrame(dt);
 
     const im = active.interior.mesh;
     for (let i = 0; i < interiorBody.length; i++) {

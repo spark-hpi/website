@@ -20,7 +20,11 @@
     if (!canvas) return;
 
     try {
-      if (localStorage.getItem("spark-voxel") === "off") return;
+      const raw = localStorage.getItem("spark-voxel-settings");
+      if (raw) {
+        const saved = JSON.parse(raw) as { enabled?: boolean };
+        if (saved?.enabled === false) return;
+      }
       if (new URLSearchParams(location.search).get("voxel") === "off") return;
     } catch {}
 
