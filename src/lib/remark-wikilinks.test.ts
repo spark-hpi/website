@@ -26,7 +26,9 @@ async function render(md: string): Promise<string> {
 describe("remarkWikilinks", () => {
   it("rewrites a known wikilink to a link", async () => {
     const html = await render("See [[How To Homeserver]] for setup.");
-    expect(html).toContain('<a href="/how-to-homeserver">How To Homeserver</a>');
+    expect(html).toContain(
+      '<a href="/how-to-homeserver">How To Homeserver</a>',
+    );
   });
 
   it("supports |alias", async () => {

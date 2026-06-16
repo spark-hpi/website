@@ -1,9 +1,17 @@
-import { existsSync, mkdirSync, cpSync, rmSync, readdirSync, statSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  cpSync,
+  rmSync,
+  readdirSync,
+  statSync,
+} from "node:fs";
 import { join } from "node:path";
 
 export function copyImages(contentPath: string, projectRoot: string): void {
   const publicImages = join(projectRoot, "public", "images");
-  if (existsSync(publicImages)) rmSync(publicImages, { recursive: true, force: true });
+  if (existsSync(publicImages))
+    rmSync(publicImages, { recursive: true, force: true });
   mkdirSync(publicImages, { recursive: true });
 
   // Root-level images/ (legacy flat layout)

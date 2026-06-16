@@ -1,6 +1,6 @@
 ---
 interface Props {
-	class?: string;
+  class?: string;
 }
 const { class: extra = "" } = Astro.props;
 ---
@@ -8,11 +8,11 @@ const { class: extra = "" } = Astro.props;
 <div class={`dotted-rule ${extra}`}></div>
 
 <style>
-	.dotted-rule {
-		width: 100%;
-		height: 14px;
-		background-image: var(--texture);
-		background-repeat: repeat;
-		opacity: 100;
-	}
+  .dotted-rule {
+    width: 100%;
+    height: 14px;
+    background-image: var(--texture);
+    background-repeat: repeat;
+    opacity: 100;
+  }
 </style>

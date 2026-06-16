@@ -32,6 +32,7 @@ const workshopTitle = root.title ?? stripNumericPrefix(shortName(root.filename))
 const subTitle = node.title ?? stripNumericPrefix(shortName(node.filename));
 const rendered = await renderSubpage(node, hierarchy);
 ---
+
 <Base title={`${subTitle} — ${workshopTitle} — Spark`}>
   <section class="ws-page">
     <BackLink href={`/${slugify(workshopTitle)}`} label={workshopTitle} />

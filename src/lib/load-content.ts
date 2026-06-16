@@ -23,7 +23,9 @@ function resolveCover(
 ): string | undefined {
   if (cover) {
     if (cover.startsWith("/") || cover.startsWith("http")) return cover;
-    return workshopDir ? `/images/${encodeURIComponent(workshopDir)}/${cover}` : `/images/${cover}`;
+    return workshopDir
+      ? `/images/${encodeURIComponent(workshopDir)}/${cover}`
+      : `/images/${cover}`;
   }
   // Auto-detect cover.* in the workshop's images folder
   if (!workshopDir) return undefined;
@@ -41,8 +43,14 @@ function isHidden(name: string): boolean {
   return name.startsWith(".");
 }
 
-function scanFiles(root: string): { relPath: string; abs: string; workshopDir: string | undefined }[] {
-  const results: { relPath: string; abs: string; workshopDir: string | undefined }[] = [];
+function scanFiles(
+  root: string,
+): { relPath: string; abs: string; workshopDir: string | undefined }[] {
+  const results: {
+    relPath: string;
+    abs: string;
+    workshopDir: string | undefined;
+  }[] = [];
 
   for (const entry of readdirSync(root)) {
     if (isHidden(entry)) continue;
@@ -55,7 +63,11 @@ function scanFiles(root: string): { relPath: string; abs: string; workshopDir: s
         if (isHidden(child) || !child.endsWith(".md")) continue;
         const childAbs = join(abs, child);
         if (statSync(childAbs).isFile()) {
-          results.push({ relPath: `${entry}/${child}`, abs: childAbs, workshopDir: entry });
+          results.push({
+            relPath: `${entry}/${child}`,
+            abs: childAbs,
+            workshopDir: entry,
+          });
         }
       }
     }
@@ -82,9 +94,10 @@ export function loadContent(contentPath?: string): LoadResult {
     const fileShortName = relPath.split("/").pop()!.replace(/\.md$/i, "");
     const isRootFile = workshopDir && fileShortName === workshopDir;
     // Auto-parent: non-root files in a workshop dir with no up: link → assign to dir root
-    const upTargets = (data.upTargets ?? []).length > 0 || !workshopDir || isRootFile
-      ? (data.upTargets ?? [])
-      : [workshopDir];
+    const upTargets =
+      (data.upTargets ?? []).length > 0 || !workshopDir || isRootFile
+        ? (data.upTargets ?? [])
+        : [workshopDir];
     pages.push({
       filename: relPath,
       absolutePath: abs,

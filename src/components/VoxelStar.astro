@@ -1,5 +1,7 @@
 ---
+
 ---
+
 <div class="voxel-star" data-voxel-star aria-hidden="true">
   <canvas class="voxel-canvas"></canvas>
   <span class="voxel-star-fallback"></span>
@@ -38,13 +40,16 @@
     import("./voxel/index").then(({ init }) => {
       const handle = init(canvas, {});
       host.dataset.ready = "true";
-      window.addEventListener("pagehide", () => handle.dispose(), { once: true });
+      window.addEventListener("pagehide", () => handle.dispose(), {
+        once: true,
+      });
     });
   }
 
   if ("requestIdleCallback" in window) {
-    (window as unknown as { requestIdleCallback: (cb: () => void) => void })
-      .requestIdleCallback(bootVoxel);
+    (
+      window as unknown as { requestIdleCallback: (cb: () => void) => void }
+    ).requestIdleCallback(bootVoxel);
   } else {
     setTimeout(bootVoxel, 200);
   }

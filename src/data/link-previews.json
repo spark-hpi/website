@@ -4,6 +4,22 @@
     "description": "NetBird combines a configuration-free peer-to-peer private network and a centralized access control system in a single open-source platform",
     "fetchedAt": 1776714008860
   },
+  "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.4.0-amd64-netinst.iso": {
+    "failed": true,
+    "fetchedAt": 1781173388373
+  },
+  "https://community-scripts.org/": {
+    "title": "Proxmox VE Helper-Scripts",
+    "description": "Community-driven scripts that simplify the setup of Proxmox Virtual Environment. Over 400+ scripts to help you manage your homelab.",
+    "image": "https://community-scripts.org/api/og",
+    "fetchedAt": 1781173388373
+  },
+  "https://community-scripts.org/scripts/post-pve-install": {
+    "title": "PVE Post Install | Proxmox VE Helper Scripts",
+    "description": "This script provides options for managing Proxmox VE repositories, including disabling the Enterprise Repo, adding or correcting PVE sources, enabling the No-S…",
+    "image": "https://community-scripts.org/api/og/post-pve-install",
+    "fetchedAt": 1781173388373
+  },
   "https://docs.docker.com/desktop/setup/install/windows-install/": {
     "title": "Windows",
     "description": "Get started with Docker for Windows. This guide covers system requirements, where to download, and instructions on how to install and update.",
@@ -46,7 +62,7 @@
   },
   "https://makerworld.com/en": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://netbird.io": {
     "title": "NetBird - Open Source Zero Trust Networking",
@@ -59,6 +75,10 @@
     "image": "https://orbstack.dev/img/icon-square256.png",
     "fetchedAt": 1776714008860
   },
+  "https://pinouts.org/": {
+    "title": "Pinouts.org",
+    "fetchedAt": 1781173388373
+  },
   "https://proxmox.com/en/downloads/proxmox-virtual-environment": {
     "title": "Downloads",
     "image": "https://www.proxmox.com/images/proxmox/Proxmox-logo-stacked-1240.png",
@@ -70,13 +90,17 @@
     "image": "https://www.home-assistant.io/images/default-social.png",
     "fetchedAt": 1776714008860
   },
+  "https://www.pcbway.com/": {
+    "title": "China PCB Prototype & Fabrication Manufacturer - PCB Prototype the Easy Way",
+    "fetchedAt": 1781173388373
+  },
   "https://www.raspberrypi.com/software/": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.reichelt.de": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.thingiverse.com": {
     "title": "Thingiverse - The community for Open Hardware",
@@ -90,126 +114,142 @@
   },
   "https://www.youtube.com/@BenVallack": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@BennJordan": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@CheeseTurbulence": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@DIYPerks": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@Engineezy": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@ExcessiveOverkill": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@HTXStudio": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@INSIDEVERYTHING1": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@JeffGeerling": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@KnowArt": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@MadeByDennis": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@MadeWithLayers": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
+  },
+  "https://www.youtube.com/@Polyfjord": {
+    "failed": true,
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@PosyMusic": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@StuffMadeHere": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@TechnologyConnections": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
+  },
+  "https://www.youtube.com/@TheDucky3D": {
+    "failed": true,
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@TheStockPot-AU/videos": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@ThisDoesNotCompute": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@axiometa": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@bitluni": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
+  },
+  "https://www.youtube.com/@christianlempa": {
+    "failed": true,
+    "fetchedAt": 1781173388373
+  },
+  "https://www.youtube.com/@deltahedra3D": {
+    "failed": true,
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@f4micom/videos": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@flurples": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@greatscottlab": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@henry_kidman": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@henryseg": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@matthewlim88": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@mediacccde": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@pierogiengineering": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@salimbenbouz": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@soiboisoft": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@styropyro": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   },
   "https://www.youtube.com/@worksbydesign": {
     "failed": true,
-    "fetchedAt": 1777377577213
+    "fetchedAt": 1781173388373
   }
 }

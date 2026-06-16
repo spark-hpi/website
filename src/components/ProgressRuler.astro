@@ -6,8 +6,8 @@
   // Drives .toc li.active based on the heading currently in view.
   const headings = Array.from(
     document.querySelectorAll<HTMLElement>(
-      ".prose h1[id], .prose h2[id], .prose h3[id]"
-    )
+      ".prose h1[id], .prose h2[id], .prose h3[id]",
+    ),
   );
   if (headings.length > 0) {
     const tocLinks = new Map<string, HTMLElement>();
@@ -69,7 +69,7 @@
       const activeLi = liFor(id);
       activeLi?.classList.add("active");
 
-      const newChapter = id ? headingToChapter.get(id) ?? null : null;
+      const newChapter = id ? (headingToChapter.get(id) ?? null) : null;
       if (newChapter !== activeChapter) {
         liFor(activeChapter)?.classList.remove("in-chapter");
         activeChapter = newChapter;
@@ -104,7 +104,7 @@
           setActive((visible[0].target as HTMLElement).id);
         }
       },
-      { rootMargin: "0px 0px -75% 0px", threshold: 0 }
+      { rootMargin: "0px 0px -75% 0px", threshold: 0 },
     );
     headings.forEach((h) => observer.observe(h));
   }

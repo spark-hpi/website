@@ -65,7 +65,8 @@ async function doBuild(hierarchy: Hierarchy): Promise<PreviewMap> {
         kind: "workshop",
         tag: "WORKSHOP",
         title: wsTitle,
-        excerpt: (node.description && node.description.trim()) || firstParagraph(tree),
+        excerpt:
+          (node.description && node.description.trim()) || firstParagraph(tree),
         image: node.cover,
       };
       for (const h of headingsWithExcerpts(tree)) {

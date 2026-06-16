@@ -3,263 +3,259 @@ import "../styles/global.css";
 import { loadContent } from "../lib/load-content";
 import { buildPreviewMap } from "../lib/extract-previews";
 interface Props {
-	title: string;
-	description?: string;
+  title: string;
+  description?: string;
 }
 const { title, description = "Spark" } = Astro.props;
 
 const { hierarchy } = loadContent();
 const previewMap = await buildPreviewMap(hierarchy);
 const previewJson = JSON.stringify(previewMap)
-	.replace(/</g, "\\u003c")
-	.replace(/>/g, "\\u003e")
-	.replace(/&/g, "\\u0026")
-	.replace(/\u2028/g, "\\u2028")
-	.replace(/\u2029/g, "\\u2029");
+  .replace(/</g, "\\u003c")
+  .replace(/>/g, "\\u003e")
+  .replace(/&/g, "\\u0026")
+  .replace(/\u2028/g, "\\u2028")
+  .replace(/\u2029/g, "\\u2029");
 ---
 
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>{title}</title>
-		<meta name="description" content={description} />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
-		<script is:inline>
-			// Apply persisted theme + color overrides before paint to avoid flash
-			try {
-				const t = localStorage.getItem("spark-theme");
-				if (t === "light" || t === "dark")
-					document.documentElement.dataset.theme = t;
-				const active =
-					document.documentElement.dataset.theme ||
-					(matchMedia("(prefers-color-scheme: dark)").matches
-						? "dark"
-						: "light");
-				const raw = localStorage.getItem("spark-colors-" + active);
-				if (raw) {
-					const v = JSON.parse(raw);
-					for (const k of ["bg", "fg", "link"]) {
-						if (v && typeof v[k] === "string")
-							document.documentElement.style.setProperty(
-								"--" + k,
-								v[k],
-							);
-					}
-				}
-			} catch (_) {}
-		</script>
-	</head>
-	<body>
-		<slot />
-		<script type="application/json" id="link-previews" set:html={previewJson} />
-		<script is:inline>
-			(() => {
-				const dataEl = document.getElementById("link-previews");
-				if (!dataEl) return;
-				let previews = null;
-				try {
-					previews = JSON.parse(dataEl.textContent || "{}");
-				} catch (_) {
-					return;
-				}
-				if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <script is:inline>
+      // Apply persisted theme + color overrides before paint to avoid flash
+      try {
+        const t = localStorage.getItem("spark-theme");
+        if (t === "light" || t === "dark")
+          document.documentElement.dataset.theme = t;
+        const active =
+          document.documentElement.dataset.theme ||
+          (matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light");
+        const raw = localStorage.getItem("spark-colors-" + active);
+        if (raw) {
+          const v = JSON.parse(raw);
+          for (const k of ["bg", "fg", "link"]) {
+            if (v && typeof v[k] === "string")
+              document.documentElement.style.setProperty("--" + k, v[k]);
+          }
+        }
+      } catch (_) {}
+    </script>
+  </head>
+  <body>
+    <slot />
+    <script type="application/json" id="link-previews" set:html={previewJson} />
+    <script is:inline>
+      (() => {
+        const dataEl = document.getElementById("link-previews");
+        if (!dataEl) return;
+        let previews = null;
+        try {
+          previews = JSON.parse(dataEl.textContent || "{}");
+        } catch (_) {
+          return;
+        }
+        if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
-				let pop = null;
-				let currentAnchor = null;
-				let showTimer = null;
-				let hideTimer = null;
-				let hoveringPop = false;
+        let pop = null;
+        let currentAnchor = null;
+        let showTimer = null;
+        let hideTimer = null;
+        let hoveringPop = false;
 
-				function ensurePop() {
-					if (pop) return pop;
-					pop = document.createElement("div");
-					pop.id = "link-preview-popover";
-					pop.setAttribute("role", "tooltip");
-					pop.hidden = true;
-					pop.innerHTML =
-						'<div class="lp-head"><span class="lp-tag"></span></div>' +
-						'<a class="lp-title" href="#"></a>' +
-						'<div class="lp-body">' +
-						'<div class="lp-excerpt"></div>' +
-						'<img class="lp-img" alt="" />' +
-						"</div>";
-					document.body.appendChild(pop);
-					pop.addEventListener("mouseenter", () => {
-						hoveringPop = true;
-						if (hideTimer) {
-							clearTimeout(hideTimer);
-							hideTimer = null;
-						}
-					});
-					pop.addEventListener("mouseleave", () => {
-						hoveringPop = false;
-						scheduleHide();
-					});
-					return pop;
-				}
+        function ensurePop() {
+          if (pop) return pop;
+          pop = document.createElement("div");
+          pop.id = "link-preview-popover";
+          pop.setAttribute("role", "tooltip");
+          pop.hidden = true;
+          pop.innerHTML =
+            '<div class="lp-head"><span class="lp-tag"></span></div>' +
+            '<a class="lp-title" href="#"></a>' +
+            '<div class="lp-body">' +
+            '<div class="lp-excerpt"></div>' +
+            '<img class="lp-img" alt="" />' +
+            "</div>";
+          document.body.appendChild(pop);
+          pop.addEventListener("mouseenter", () => {
+            hoveringPop = true;
+            if (hideTimer) {
+              clearTimeout(hideTimer);
+              hideTimer = null;
+            }
+          });
+          pop.addEventListener("mouseleave", () => {
+            hoveringPop = false;
+            scheduleHide();
+          });
+          return pop;
+        }
 
-				function keyFor(a) {
-					const k = a.getAttribute("data-preview-key");
-					if (k) return k;
-					const href = a.getAttribute("href");
-					if (href && href.startsWith("#")) {
-						return (
-							location.pathname.replace(/\/$/, "") + href
-						);
-					}
-					return null;
-				}
+        function keyFor(a) {
+          const k = a.getAttribute("data-preview-key");
+          if (k) return k;
+          const href = a.getAttribute("href");
+          if (href && href.startsWith("#")) {
+            return location.pathname.replace(/\/$/, "") + href;
+          }
+          return null;
+        }
 
-				function scheduleShow(a) {
-					if (hideTimer) {
-						clearTimeout(hideTimer);
-						hideTimer = null;
-					}
-					if (currentAnchor === a && pop && !pop.hidden) return;
-					if (showTimer) clearTimeout(showTimer);
-					showTimer = setTimeout(() => show(a), 220);
-				}
+        function scheduleShow(a) {
+          if (hideTimer) {
+            clearTimeout(hideTimer);
+            hideTimer = null;
+          }
+          if (currentAnchor === a && pop && !pop.hidden) return;
+          if (showTimer) clearTimeout(showTimer);
+          showTimer = setTimeout(() => show(a), 220);
+        }
 
-				function scheduleHide() {
-					if (showTimer) {
-						clearTimeout(showTimer);
-						showTimer = null;
-					}
-					if (hideTimer) clearTimeout(hideTimer);
-					hideTimer = setTimeout(() => {
-						if (!hoveringPop) hide();
-					}, 140);
-				}
+        function scheduleHide() {
+          if (showTimer) {
+            clearTimeout(showTimer);
+            showTimer = null;
+          }
+          if (hideTimer) clearTimeout(hideTimer);
+          hideTimer = setTimeout(() => {
+            if (!hoveringPop) hide();
+          }, 140);
+        }
 
-				function show(a) {
-					const key = keyFor(a);
-					if (!key) return;
-					const p = previews[key];
-					if (!p) return;
-					const el = ensurePop();
-					el.querySelector(".lp-tag").textContent = p.tag || "";
-					const titleEl = el.querySelector(".lp-title");
-					titleEl.textContent = p.title || "";
-					const dest = p.href || a.getAttribute("href") || "#";
-					titleEl.setAttribute("href", dest);
-					if (/^https?:\/\//i.test(dest)) {
-						titleEl.setAttribute("target", "_blank");
-						titleEl.setAttribute("rel", "noopener");
-					} else {
-						titleEl.removeAttribute("target");
-						titleEl.removeAttribute("rel");
-					}
-					const ex = el.querySelector(".lp-excerpt");
-					ex.textContent = p.excerpt || "";
-					ex.hidden = !p.excerpt;
-					const img = el.querySelector(".lp-img");
-					if (p.image) {
-						img.onerror = () => {
-							img.hidden = true;
-						};
-						img.onload = () => {
-							img.hidden = false;
-						};
-						img.hidden = true;
-						img.src = p.image;
-					} else {
-						img.hidden = true;
-						img.removeAttribute("src");
-					}
-					el.dataset.kind = p.kind || "";
-					el.hidden = false;
-					el.style.visibility = "hidden";
-					currentAnchor = a;
-					position(el, a);
-					el.style.visibility = "";
-				}
+        function show(a) {
+          const key = keyFor(a);
+          if (!key) return;
+          const p = previews[key];
+          if (!p) return;
+          const el = ensurePop();
+          el.querySelector(".lp-tag").textContent = p.tag || "";
+          const titleEl = el.querySelector(".lp-title");
+          titleEl.textContent = p.title || "";
+          const dest = p.href || a.getAttribute("href") || "#";
+          titleEl.setAttribute("href", dest);
+          if (/^https?:\/\//i.test(dest)) {
+            titleEl.setAttribute("target", "_blank");
+            titleEl.setAttribute("rel", "noopener");
+          } else {
+            titleEl.removeAttribute("target");
+            titleEl.removeAttribute("rel");
+          }
+          const ex = el.querySelector(".lp-excerpt");
+          ex.textContent = p.excerpt || "";
+          ex.hidden = !p.excerpt;
+          const img = el.querySelector(".lp-img");
+          if (p.image) {
+            img.onerror = () => {
+              img.hidden = true;
+            };
+            img.onload = () => {
+              img.hidden = false;
+            };
+            img.hidden = true;
+            img.src = p.image;
+          } else {
+            img.hidden = true;
+            img.removeAttribute("src");
+          }
+          el.dataset.kind = p.kind || "";
+          el.hidden = false;
+          el.style.visibility = "hidden";
+          currentAnchor = a;
+          position(el, a);
+          el.style.visibility = "";
+        }
 
-				function hide() {
-					if (pop) pop.hidden = true;
-					currentAnchor = null;
-				}
+        function hide() {
+          if (pop) pop.hidden = true;
+          currentAnchor = null;
+        }
 
-				function position(el, a) {
-					const rect = a.getBoundingClientRect();
-					const vw = innerWidth;
-					const vh = innerHeight;
-					const maxW = Math.min(340, vw - 16);
-					el.style.width = maxW + "px";
-					const ph = el.offsetHeight;
-					const pw = el.offsetWidth;
-					const gap = 8;
-					let top = rect.bottom + gap;
-					if (top + ph > vh - 8) {
-						const above = rect.top - gap - ph;
-						if (above >= 8) top = above;
-					}
-					let left = rect.left;
-					if (left + pw > vw - 8) left = vw - 8 - pw;
-					if (left < 8) left = 8;
-					el.style.top = top + scrollY + "px";
-					el.style.left = left + scrollX + "px";
-				}
+        function position(el, a) {
+          const rect = a.getBoundingClientRect();
+          const vw = innerWidth;
+          const vh = innerHeight;
+          const maxW = Math.min(340, vw - 16);
+          el.style.width = maxW + "px";
+          const ph = el.offsetHeight;
+          const pw = el.offsetWidth;
+          const gap = 8;
+          let top = rect.bottom + gap;
+          if (top + ph > vh - 8) {
+            const above = rect.top - gap - ph;
+            if (above >= 8) top = above;
+          }
+          let left = rect.left;
+          if (left + pw > vw - 8) left = vw - 8 - pw;
+          if (left < 8) left = 8;
+          el.style.top = top + scrollY + "px";
+          el.style.left = left + scrollX + "px";
+        }
 
-				document.addEventListener("mouseover", (e) => {
-					const a = e.target.closest
-						? e.target.closest("a[data-preview-key]")
-						: null;
-					if (!a) return;
-					scheduleShow(a);
-				});
-				document.addEventListener("mouseout", (e) => {
-					const a = e.target.closest
-						? e.target.closest("a[data-preview-key]")
-						: null;
-					if (!a) return;
-					const to = e.relatedTarget;
-					if (!to || !a.contains(to)) scheduleHide();
-				});
-				window.addEventListener("scroll", hide, { passive: true });
-				window.addEventListener("resize", hide, { passive: true });
-				document.addEventListener("keydown", (e) => {
-					if (e.key === "Escape") hide();
-				});
-			})();
-		</script>
-		<script is:inline>
-			(() => {
-				const attach = () => {
-					const blocks = document.querySelectorAll("pre > code.hljs");
-					for (const code of blocks) {
-						const pre = code.parentElement;
-						if (!pre || pre.parentElement?.classList.contains("code-block")) continue;
-						const wrap = document.createElement("div");
-						wrap.className = "code-block";
-						pre.replaceWith(wrap);
-						wrap.appendChild(pre);
-						const btn = document.createElement("button");
-						btn.type = "button";
-						btn.className = "copy-btn";
-						btn.setAttribute("aria-label", "Copy code");
-						btn.innerHTML =
-							'<span class="copy-icon" aria-hidden="true"></span><span class="copy-done" aria-hidden="true">✓</span>';
-						btn.addEventListener("click", async () => {
-							try {
-								await navigator.clipboard.writeText(code.textContent ?? "");
-								btn.dataset.copied = "true";
-								setTimeout(() => {
-									delete btn.dataset.copied;
-								}, 1500);
-							} catch (_) {}
-						});
-						wrap.appendChild(btn);
-					}
-				};
-				if (document.readyState === "loading") {
-					document.addEventListener("DOMContentLoaded", attach);
-				} else {
-					attach();
-				}
-			})();
-		</script>
-	</body>
+        document.addEventListener("mouseover", (e) => {
+          const a = e.target.closest
+            ? e.target.closest("a[data-preview-key]")
+            : null;
+          if (!a) return;
+          scheduleShow(a);
+        });
+        document.addEventListener("mouseout", (e) => {
+          const a = e.target.closest
+            ? e.target.closest("a[data-preview-key]")
+            : null;
+          if (!a) return;
+          const to = e.relatedTarget;
+          if (!to || !a.contains(to)) scheduleHide();
+        });
+        window.addEventListener("scroll", hide, { passive: true });
+        window.addEventListener("resize", hide, { passive: true });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") hide();
+        });
+      })();
+    </script>
+    <script is:inline>
+      (() => {
+        const attach = () => {
+          const blocks = document.querySelectorAll("pre > code.hljs");
+          for (const code of blocks) {
+            const pre = code.parentElement;
+            if (!pre || pre.parentElement?.classList.contains("code-block"))
+              continue;
+            const wrap = document.createElement("div");
+            wrap.className = "code-block";
+            pre.replaceWith(wrap);
+            wrap.appendChild(pre);
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "copy-btn";
+            btn.setAttribute("aria-label", "Copy code");
+            btn.innerHTML =
+              '<span class="copy-icon" aria-hidden="true"></span><span class="copy-done" aria-hidden="true">✓</span>';
+            btn.addEventListener("click", async () => {
+              try {
+                await navigator.clipboard.writeText(code.textContent ?? "");
+                btn.dataset.copied = "true";
+                setTimeout(() => {
+                  delete btn.dataset.copied;
+                }, 1500);
+              } catch (_) {}
+            });
+            wrap.appendChild(btn);
+          }
+        };
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", attach);
+        } else {
+          attach();
+        }
+      })();
+    </script>
+  </body>
 </html>

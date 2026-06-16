@@ -16,9 +16,7 @@ const workshops = defineCollection({
         const rootNode = hierarchy.byFilename.get(node.workshopRootFilename)!;
         const workshopSlug = slugify(
           rootNode.title ??
-            stripNumericPrefix(
-              shortName(node.workshopRootFilename),
-            ),
+            stripNumericPrefix(shortName(node.workshopRootFilename)),
         );
         const body = node.rawContent ?? "";
         const rawData = {

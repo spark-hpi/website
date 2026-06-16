@@ -3,6 +3,7 @@
 
 # build output
 dist/
+
 # generated types
 .astro/
 
@@ -40,6 +41,9 @@ texture.svg
 DepartureMono-1.500/
 website/
 docs/
+
+# Tooling
+bun.lock
 
 # build output — populated by copy-images.ts from CONTENT_PATH at build time
 public/images/

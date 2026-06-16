@@ -48,10 +48,7 @@ describe("extractToc", () => {
   });
 
   it("skips headings without an id", () => {
-    const tree = root(
-      el("h2", {}, "No id"),
-      el("h2", { id: "ok" }, "OK"),
-    );
+    const tree = root(el("h2", {}, "No id"), el("h2", { id: "ok" }, "OK"));
     expect(extractToc(tree)).toEqual([{ tier: "h2", id: "ok", text: "OK" }]);
   });
 

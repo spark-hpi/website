@@ -19,17 +19,17 @@ export function buildWikiResolver(hierarchy: Hierarchy): WikiResolver {
     if (!node) return { broken: true, url: "" };
     const root = hierarchy.byFilename.get(node.workshopRootFilename)!;
     const workshopSlug = slugify(
-      root.title ?? stripNumericPrefix(shortName(root.filename))
+      root.title ?? stripNumericPrefix(shortName(root.filename)),
     );
     if (node.depth === 0) return { url: `/${workshopSlug}` };
     if (node.depth === 1) {
       const childSlug = slugify(
-        node.title ?? stripNumericPrefix(shortName(node.filename))
+        node.title ?? stripNumericPrefix(shortName(node.filename)),
       );
       return { url: `/${workshopSlug}#${childSlug}` };
     }
     const subSlug = slugify(
-      node.title ?? stripNumericPrefix(shortName(node.filename))
+      node.title ?? stripNumericPrefix(shortName(node.filename)),
     );
     return { url: `/${workshopSlug}/${subSlug}` };
   };
@@ -53,8 +53,7 @@ function chapterHeading(title: string): Heading {
 function assembleWorkshopTree(workshop: HierNode): MdastRoot {
   const rootTree = parseMarkdown(workshop.rawContent ?? "");
   for (const child of workshop.children) {
-    const title =
-      child.title ?? stripNumericPrefix(shortName(child.filename));
+    const title = child.title ?? stripNumericPrefix(shortName(child.filename));
     const childTree = parseMarkdown(child.rawContent ?? "");
     rootTree.children.push(chapterHeading(title));
     rootTree.children.push(...childTree.children);
@@ -77,8 +76,18 @@ function countWordsInTree(tree: MdastRoot): number {
 function wrapTables() {
   return (tree: any) => {
     visit(tree, "element", (node: any, index: number, parent: any) => {
-      if (node.tagName !== "table" || !parent || parent.properties?.className?.includes("table-wrap")) return;
-      const wrapper = { type: "element", tagName: "div", properties: { className: ["table-wrap"] }, children: [node] };
+      if (
+        node.tagName !== "table" ||
+        !parent ||
+        parent.properties?.className?.includes("table-wrap")
+      )
+        return;
+      const wrapper = {
+        type: "element",
+        tagName: "div",
+        properties: { className: ["table-wrap"] },
+        children: [node],
+      };
       parent.children.splice(index, 1, wrapper);
     });
   };
@@ -98,7 +107,8 @@ function transformImages(workshopDir: string | undefined) {
       const title: string | undefined = node.properties?.title;
       if (title && /^\d+$/.test(title)) {
         const width = Number(title);
-        if (width > 0) node.properties.style = `max-width:${width}px;width:100%`;
+        if (width > 0)
+          node.properties.style = `max-width:${width}px;width:100%`;
         delete node.properties.title;
       }
     });
@@ -106,7 +116,9 @@ function transformImages(workshopDir: string | undefined) {
     // Pass 2: promote paragraphs containing only an image to <figure> with optional caption.
     visit(tree, "element", (node: any, index: any, parent: any) => {
       if (node.tagName !== "p" || !parent || index == null) return;
-      const kids = (node.children ?? []).filter((c: any) => !(c.type === "text" && /^\s*$/.test(c.value)));
+      const kids = (node.children ?? []).filter(
+        (c: any) => !(c.type === "text" && /^\s*$/.test(c.value)),
+      );
       if (kids.length !== 1) return;
       const img = kids[0];
       if (img.type !== "element" || img.tagName !== "img") return;
@@ -173,12 +185,18 @@ const WIKI_NAME_RE = /(?<!!)\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]/g;
 const GLOSSARY_RE = /^glossary$/i;
 const HEADING_LINE_RE = /^(#{1,3})\s+(.+?)\s*$/;
 
-function extractSubheadings(raw: string | undefined, baseUrl: string): TocItem[] {
+function extractSubheadings(
+  raw: string | undefined,
+  baseUrl: string,
+): TocItem[] {
   if (!raw) return [];
   const out: TocItem[] = [];
   let inFence = false;
   for (const line of raw.split("\n")) {
-    if (/^```/.test(line.trim())) { inFence = !inFence; continue; }
+    if (/^```/.test(line.trim())) {
+      inFence = !inFence;
+      continue;
+    }
     if (inFence) continue;
     const m = HEADING_LINE_RE.exec(line);
     if (!m) continue;
@@ -186,7 +204,7 @@ function extractSubheadings(raw: string | undefined, baseUrl: string): TocItem[]
     const text = m[2].replace(/\s*#+\s*$/, "").trim();
     if (!text) continue;
     out.push({
-      tier: (`h${depth}` as "h1" | "h2" | "h3"),
+      tier: `h${depth}` as "h1" | "h2" | "h3",
       id: "",
       text,
       href: `${baseUrl}#${slugify(text)}`,
@@ -264,7 +282,13 @@ function integrateLinkedIntoToc(
     const pages = byChapter.get(currentChapter);
     if (!pages) return;
     for (const p of pages) {
-      out.push({ tier: "h1", id: "", text: p.title, href: p.url, children: p.headings });
+      out.push({
+        tier: "h1",
+        id: "",
+        text: p.title,
+        href: p.url,
+        children: p.headings,
+      });
     }
     byChapter.delete(currentChapter);
   };
@@ -279,7 +303,13 @@ function integrateLinkedIntoToc(
   // Any linked pages whose parent didn't match a chapter heading: append.
   for (const pages of byChapter.values()) {
     for (const p of pages) {
-      out.push({ tier: "h1", id: "", text: p.title, href: p.url, children: p.headings });
+      out.push({
+        tier: "h1",
+        id: "",
+        text: p.title,
+        href: p.url,
+        children: p.headings,
+      });
     }
   }
   for (const p of trailing) {
@@ -295,7 +325,7 @@ function workshopDir(filename: string): string | undefined {
 
 export async function renderWorkshop(
   workshop: HierNode,
-  hierarchy: Hierarchy
+  hierarchy: Hierarchy,
 ): Promise<RenderedWorkshop> {
   const resolver = buildWikiResolver(hierarchy);
   const dir = workshopDir(workshop.filename);
@@ -340,7 +370,7 @@ export async function renderWorkshop(
 
 export async function renderSubpage(
   page: HierNode,
-  hierarchy: Hierarchy
+  hierarchy: Hierarchy,
 ): Promise<RenderedWorkshop> {
   const resolver = buildWikiResolver(hierarchy);
   const md = page.rawContent ?? "";

@@ -1,120 +1,120 @@
 ---
 interface Props {
-	href: string;
-	title: string;
-	description?: string;
-	cover?: string;
-	pageCount: number;
-	wordCount: number;
+  href: string;
+  title: string;
+  description?: string;
+  cover?: string;
+  pageCount: number;
+  wordCount: number;
 }
 const { href, title, description, cover, pageCount, wordCount } = Astro.props;
 const minutes = Math.max(1, Math.round(wordCount / 230));
 ---
 
 <a class="ws-row" href={href}>
-	<div class="ws-cover">
-		{
-			cover ? (
-				<img src={cover} alt="" />
-			) : (
-				<span class="placeholder">cover · 4:3</span>
-			)
-		}
-	</div>
-	<div>
-		<div class="ws-title-row">
-			<h2 class="ws-title">{title}</h2>
-			<div class="ws-meta">{pageCount} pages</div>
-		</div>
-		{description && <p class="ws-desc">{description}</p>}
-		<div class="ws-cta">Read workshop</div>
-	</div>
+  <div class="ws-cover">
+    {
+      cover ? (
+        <img src={cover} alt="" />
+      ) : (
+        <span class="placeholder">cover · 4:3</span>
+      )
+    }
+  </div>
+  <div>
+    <div class="ws-title-row">
+      <h2 class="ws-title">{title}</h2>
+      <div class="ws-meta">{pageCount} pages</div>
+    </div>
+    {description && <p class="ws-desc">{description}</p>}
+    <div class="ws-cta">Read workshop</div>
+  </div>
 </a>
 
 <style>
-	a.ws-row {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: 24px;
-		padding-bottom: 80px;
-		border-bottom: 1px solid var(--rule);
-		color: inherit;
-		text-decoration: none;
-	}
-	@media (min-width: 768px) {
-		a.ws-row {
-			grid-template-columns: 280px 1fr;
-			gap: 48px;
-		}
-	}
-	a.ws-row:hover .ws-cover {
-		border-color: var(--fg);
-	}
+  a.ws-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding-bottom: 80px;
+    border-bottom: 1px solid var(--rule);
+    color: inherit;
+    text-decoration: none;
+  }
+  @media (min-width: 768px) {
+    a.ws-row {
+      grid-template-columns: 280px 1fr;
+      gap: 48px;
+    }
+  }
+  a.ws-row:hover .ws-cover {
+    border-color: var(--fg);
+  }
 
-	.ws-cover {
-		background-image: var(--texture);
-		background-repeat: repeat;
-		border: 1px solid var(--rule);
-		aspect-ratio: 4 / 3;
-		position: relative;
-		display: grid;
-		place-items: center;
-		overflow: hidden;
-		transition: border-color 0.2s;
-	}
-	.ws-cover img {
-		position: absolute;
-		inset: 12px;
-		width: calc(100% - 24px);
-		height: calc(100% - 24px);
-		object-fit: cover;
-		object-position: center;
-	}
-	.ws-cover .placeholder {
-		font-family: var(--mono);
-		font-size: 10px;
-		text-transform: uppercase;
-		color: var(--muted);
-	}
+  .ws-cover {
+    background-image: var(--texture);
+    background-repeat: repeat;
+    border: 1px solid var(--rule);
+    aspect-ratio: 4 / 3;
+    position: relative;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .ws-cover img {
+    position: absolute;
+    inset: 12px;
+    width: calc(100% - 24px);
+    height: calc(100% - 24px);
+    object-fit: cover;
+    object-position: center;
+  }
+  .ws-cover .placeholder {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
 
-	.ws-title-row {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: 16px;
-		align-items: baseline;
-	}
-	.ws-title {
-		font-family: var(--serif);
-		font-size: 36px;
-		font-weight: 600;
-		line-height: 1.1;
-		margin: 0;
-		letter-spacing: -0.015em;
-	}
-	.ws-meta {
-		font-family: var(--mono);
-		font-size: 11px;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--muted);
-		white-space: nowrap;
-	}
-	.ws-desc {
-		margin: 16px 0 0;
-		max-width: 60ch;
-		line-height: 1.55;
-		font-size: 19px;
-		color: var(--fg);
-	}
-	.ws-cta {
-		margin-top: 24px;
-		font-family: var(--mono);
-		font-size: 12px;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--link);
-	}
-	.ws-cta::after {
-		content: " →";
-	}
+  .ws-title-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: baseline;
+  }
+  .ws-title {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.1;
+    margin: 0;
+    letter-spacing: -0.015em;
+  }
+  .ws-meta {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .ws-desc {
+    margin: 16px 0 0;
+    max-width: 60ch;
+    line-height: 1.55;
+    font-size: 19px;
+    color: var(--fg);
+  }
+  .ws-cta {
+    margin-top: 24px;
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--link);
+  }
+  .ws-cta::after {
+    content: " →";
+  }
 </style>

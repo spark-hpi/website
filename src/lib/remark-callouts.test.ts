@@ -15,7 +15,10 @@ describe("remarkCallouts", () => {
     const bq = tree.children[0];
     expect(bq.type).toBe("blockquote");
     expect(bq.data?.hName).toBe("aside");
-    expect(bq.data?.hProperties?.className).toEqual(["callout", "callout-note"]);
+    expect(bq.data?.hProperties?.className).toEqual([
+      "callout",
+      "callout-note",
+    ]);
     expect(bq.data?.hProperties?.["data-callout"]).toBe("note");
   });
 
@@ -58,7 +61,10 @@ describe("remarkCallouts", () => {
   it("falls back to 'note' styling for unknown types but keeps the original label", async () => {
     const tree: any = await toMdast("> [!xyzzy]\n> Body.");
     const bq = tree.children[0];
-    expect(bq.data?.hProperties?.className).toEqual(["callout", "callout-note"]);
+    expect(bq.data?.hProperties?.className).toEqual([
+      "callout",
+      "callout-note",
+    ]);
     expect(bq.data?.hProperties?.["data-callout"]).toBe("xyzzy");
     const label = bq.children[0].data?.hChildren?.[1];
     expect(label?.children?.[0]?.value).toBe("XYZZY");
@@ -73,7 +79,10 @@ describe("remarkCallouts", () => {
   it("is case-insensitive on the type", async () => {
     const tree: any = await toMdast("> [!WARNING] mixed\n> Body.");
     const bq = tree.children[0];
-    expect(bq.data?.hProperties?.className).toEqual(["callout", "callout-warning"]);
+    expect(bq.data?.hProperties?.className).toEqual([
+      "callout",
+      "callout-warning",
+    ]);
     expect(bq.data?.hProperties?.["data-callout"]).toBe("warning");
   });
 });

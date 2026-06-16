@@ -11,7 +11,9 @@ export type WikiResolver = (name: string) => ResolvedWiki;
 
 const WIKI_RE = /(!?)\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/g;
 
-export const remarkWikilinks: Plugin<[{ resolver: WikiResolver }], Root> = (opts) => {
+export const remarkWikilinks: Plugin<[{ resolver: WikiResolver }], Root> = (
+  opts,
+) => {
   const { resolver } = opts;
 
   return (tree: Root) => {
@@ -42,8 +44,14 @@ export const remarkWikilinks: Plugin<[{ resolver: WikiResolver }], Root> = (opts
           let caption: string | undefined;
           const aliasRaw = alias?.trim() ?? "";
           if (aliasRaw) {
-            for (const part of aliasRaw.split("|").map((s) => s.trim()).filter(Boolean)) {
-              if (!width && /^\d+$/.test(part)) { width = part; continue; }
+            for (const part of aliasRaw
+              .split("|")
+              .map((s) => s.trim())
+              .filter(Boolean)) {
+              if (!width && /^\d+$/.test(part)) {
+                width = part;
+                continue;
+              }
               if (!caption) caption = part;
             }
           }

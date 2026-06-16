@@ -1,52 +1,52 @@
 @font-face {
-	font-family: "Departure Mono";
-	src: url("/fonts/DepartureMono-Regular.woff2") format("woff2");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
+  font-family: "Departure Mono";
+  src: url("/fonts/DepartureMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: "Epoch";
-	src: url("/fonts/Epoch.otf") format("otf");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
+  font-family: "Epoch";
+  src: url("/fonts/Epoch.otf") format("otf");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: "EB Garamond";
-	src: url("/fonts/eb-garamond-latin-400-normal.woff2") format("woff2");
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
+  font-family: "EB Garamond";
+  src: url("/fonts/eb-garamond-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 @font-face {
-	font-family: "EB Garamond";
-	src: url("/fonts/eb-garamond-latin-400-italic.woff2") format("woff2");
-	font-weight: 400;
-	font-style: italic;
-	font-display: swap;
+  font-family: "EB Garamond";
+  src: url("/fonts/eb-garamond-latin-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
 }
 @font-face {
-	font-family: "EB Garamond";
-	src: url("/fonts/eb-garamond-latin-600-normal.woff2") format("woff2");
-	font-weight: 600;
-	font-style: normal;
-	font-display: swap;
+  font-family: "EB Garamond";
+  src: url("/fonts/eb-garamond-latin-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
 }
 @font-face {
-	font-family: "EB Garamond";
-	src: url("/fonts/eb-garamond-latin-600-italic.woff2") format("woff2");
-	font-weight: 600;
-	font-style: italic;
-	font-display: swap;
+  font-family: "EB Garamond";
+  src: url("/fonts/eb-garamond-latin-600-italic.woff2") format("woff2");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: "Clash Grotesk";
-	src: url("/fonts/ClashGrotesk-Variable.woff2") format("woff2-variations");
-	font-weight: 200 700;
-	font-style: normal;
-	font-display: swap;
+  font-family: "Clash Grotesk";
+  src: url("/fonts/ClashGrotesk-Variable.woff2") format("woff2-variations");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
 }

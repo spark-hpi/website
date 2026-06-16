@@ -1,18 +1,29 @@
 ---
-interface Props { href: string; label: string }
+interface Props {
+  href: string;
+  label: string;
+}
 const { href, label } = Astro.props;
 ---
+
 <a class="back-link" href={href}>← {label}</a>
 
 <style>
   .back-link {
-    display: inline-block; width: fit-content;
-    font-family: var(--mono); font-size: 12px;
-    text-transform: uppercase; letter-spacing: 0.06em;
-    color: var(--fg); text-decoration: none;
+    display: inline-block;
+    width: fit-content;
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--fg);
+    text-decoration: none;
     margin-bottom: 24px;
     padding: 6px 10px;
     border: 1px solid var(--rule);
   }
-  .back-link:hover { color: var(--link); border-color: var(--fg); }
+  .back-link:hover {
+    color: var(--link);
+    border-color: var(--fg);
+  }
 </style>
