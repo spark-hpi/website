@@ -5,9 +5,17 @@ import WorkshopHero from "../../components/WorkshopHero.astro";
 import TocRail from "../../components/TocRail.astro";
 import ProgressRuler from "../../components/ProgressRuler.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
+import ChapterDivider from "../../components/ChapterDivider.astro";
 import Prose from "../../components/Prose.astro";
+import { getCollection, render } from "astro:content";
 import { loadContent } from "../../lib/load-content";
-import { renderWorkshop } from "../../lib/render-workshop";
+import { buildWorkshopToc } from "../../lib/toc";
+import {
+  collectLinkedPages,
+  integrateLinkedIntoToc,
+  splitGlossary,
+} from "../../lib/links";
+import { countWords } from "../../lib/word-count";
 
 export async function getStaticPaths() {
   const { hierarchy } = loadContent();
@@ -21,7 +29,50 @@ const { workshopFilename } = Astro.props as { workshopFilename: string };
 const { hierarchy } = loadContent();
 const workshop = hierarchy.byFilename.get(workshopFilename)!;
 const title = workshop.displayTitle;
-const rendered = await renderWorkshop(workshop, hierarchy);
+
+// Map each hierarchy Node to its renderable collection entry (id === filename).
+const entries = await getCollection("docs");
+const entryById = new Map(entries.map((e) => [e.id, e]));
+
+// Render the workshop's own body, then each chapter (depth-1 child) separately —
+// they stack on the page with a ChapterDivider between them.
+const { Content: WorkshopBody, headings: ownHeadings } = await render(
+  entryById.get(workshop.filename)!,
+);
+const chapters = await Promise.all(
+  workshop.children.map(async (node) => {
+    const { Content, headings } = await render(entryById.get(node.filename)!);
+    return { node, Content, headings };
+  }),
+);
+
+// TOC: own headings + (divider + chapter headings) per chapter, then merge in
+// wiki-linked pages under their referencing chapter; split out the glossary.
+const baseToc = buildWorkshopToc(
+  ownHeadings,
+  chapters.map((c) => ({
+    title: c.node.displayTitle,
+    slug: c.node.slug,
+    headings: c.headings,
+  })),
+);
+const exclude = new Set<string>([
+  workshop.filename,
+  ...workshop.children.map((c) => c.filename),
+]);
+const linked = collectLinkedPages(
+  [workshop.rawContent, ...workshop.children.map((c) => c.rawContent)],
+  exclude,
+  hierarchy,
+);
+const { glossary, regular } = splitGlossary(linked);
+const toc = integrateLinkedIntoToc(baseToc, regular);
+
+const pageCount = 1 + workshop.children.length;
+const wordCount = [workshop, ...workshop.children].reduce(
+  (n, p) => n + countWords(p.rawContent),
+  0,
+);
 ---
 
 <Base title={`${title} — Spark`}>
@@ -31,16 +82,29 @@ const rendered = await renderWorkshop(workshop, hierarchy);
       title={title}
       authors={workshop.authors}
       date={workshop.date}
-      pageCount={rendered.pageCount}
-      wordCount={rendered.wordCount}
+      pageCount={pageCount}
+      wordCount={wordCount}
       cover={workshop.cover}
     />
     <div class="ws-body">
-      <TocRail items={rendered.toc} glossary={rendered.glossary} />
-      <Prose html={rendered.html} variant="workshop" />
+      <TocRail items={toc} glossary={glossary} />
+      <Prose variant="workshop">
+        <WorkshopBody />
+        {
+          chapters.map((ch) => {
+            const Body = ch.Content;
+            return (
+              <>
+                <ChapterDivider title={ch.node.displayTitle} id={ch.node.slug} />
+                <Body />
+              </>
+            );
+          })
+        }
+      </Prose>
     </div>
   </section>
-  <ProgressRuler items={rendered.toc} />
+  <ProgressRuler items={toc} />
   <SiteFooter />
 </Base>
 

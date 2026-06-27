@@ -11,8 +11,8 @@
  * DOM contract: emits `data-toc-link={id}` on in-page links so ProgressRuler can
  *   highlight the active one. Keep that attribute if you change the markup.
  */
-import type { TocItem } from "../lib/extract-toc";
-import type { LinkedPage } from "../lib/render-workshop";
+import type { TocItem } from "../lib/toc";
+import type { LinkedPage } from "../lib/links";
 export type { TocItem };
 interface Props {
   items: TocItem[];

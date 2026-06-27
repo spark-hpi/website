@@ -5,8 +5,14 @@ import TocRail from "../../components/TocRail.astro";
 import ProgressRuler from "../../components/ProgressRuler.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import Prose from "../../components/Prose.astro";
+import { getCollection, render } from "astro:content";
 import { loadContent } from "../../lib/load-content";
-import { renderSubpage } from "../../lib/render-workshop";
+import { headingsToToc } from "../../lib/toc";
+import {
+  collectLinkedPages,
+  integrateLinkedIntoToc,
+  splitGlossary,
+} from "../../lib/links";
 
 export async function getStaticPaths() {
   const { hierarchy } = loadContent();
@@ -28,7 +34,19 @@ const node = hierarchy.byFilename.get(filename)!;
 const root = hierarchy.byFilename.get(node.workshopRootFilename)!;
 const workshopTitle = root.displayTitle;
 const subTitle = node.displayTitle;
-const rendered = await renderSubpage(node, hierarchy);
+
+const entries = await getCollection("docs");
+const entry = entries.find((e) => e.id === node.filename)!;
+const { Content, headings } = await render(entry);
+
+// TOC: this page's headings + any wiki-linked pages it references (glossary split).
+const linked = collectLinkedPages(
+  [node.rawContent],
+  new Set<string>([node.filename]),
+  hierarchy,
+);
+const { glossary, regular } = splitGlossary(linked);
+const toc = integrateLinkedIntoToc(headingsToToc(headings), regular);
 ---
 
 <Base title={`${subTitle} — ${workshopTitle} — Spark`}>
@@ -39,11 +57,11 @@ const rendered = await renderSubpage(node, hierarchy);
       <h1>{subTitle}</h1>
     </header>
     <div class="ws-body">
-      <TocRail items={rendered.toc} glossary={rendered.glossary} />
-      <Prose html={rendered.html} variant="subpage" />
+      <TocRail items={toc} glossary={glossary} />
+      <Prose variant="subpage"><Content /></Prose>
     </div>
   </section>
-  <ProgressRuler items={rendered.toc} />
+  <ProgressRuler items={toc} />
   <SiteFooter />
 </Base>
 

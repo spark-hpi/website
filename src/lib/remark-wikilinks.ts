@@ -23,6 +23,20 @@ export interface ResolvedWiki {
 }
 export type WikiResolver = (name: string) => ResolvedWiki;
 
+/**
+ * Build the resolver from the hierarchy: a wikilink name → that Node's precomputed
+ * url (routes.ts is the only thing that knows how a Node becomes a url). Unknown
+ * names render as <span class="broken">. The plugin appends any #heading itself.
+ */
+export function buildWikiResolver(hierarchy: {
+  byBasename: Map<string, { url: string }>;
+}): WikiResolver {
+  return (name: string) => {
+    const node = hierarchy.byBasename.get(name);
+    return node ? { url: node.url } : { broken: true, url: "" };
+  };
+}
+
 const WIKI_RE = /(!?)\[\[([^\]|#]+)(?:#([^\]|]+))?(?:\|([^\]]+))?\]\]/g;
 
 export const remarkWikilinks: Plugin<[{ resolver: WikiResolver }], Root> = (
