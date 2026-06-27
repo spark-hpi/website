@@ -11,7 +11,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "sync-content": "git -C content pull --ff-only || git clone --depth 1 https://github.com/spark-hpi/docs content",
+    "sync": "git -C content pull --ff-only || git clone --depth 1 https://github.com/spark-hpi/docs content",
     "deploy": "npm run sync-content && astro build && wrangler pages deploy dist --project-name=spark",
     "refresh-link-previews": "rm -f src/data/link-previews.json && echo '{}' > src/data/link-previews.json",
     "test": "vitest run --passWithNoTests",

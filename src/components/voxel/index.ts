@@ -13,6 +13,7 @@ import { magnetMode } from "./modes/magnet";
 import { tiltMode } from "./modes/tilt";
 import { gravityMode } from "./modes/gravity";
 import { applyIdle } from "./idle";
+import { createAutopilot } from "./autopilot";
 import { watchFg } from "./theme";
 
 export type { VoxelSettings } from "./settings";
@@ -40,9 +41,13 @@ interface ActiveSkin {
   boundary: SolidHandle | null;
 }
 
+const isTouchOnly = () =>
+  typeof matchMedia !== "undefined" && matchMedia("(hover: none) and (pointer: coarse)").matches;
+
 function forceMobileSafe(s: VoxelSettings): VoxelSettings {
-  const touchOnly = typeof matchMedia !== "undefined" && matchMedia("(hover: none) and (pointer: coarse)").matches;
-  if (touchOnly && s.mode !== "explode") return { ...s, mode: "explode" };
+  // Touch devices have no live cursor and the canvas ignores pointer events
+  // (so the page can scroll), so force `repel` — the autopilot drives it.
+  if (isTouchOnly() && s.mode !== "repel") return { ...s, mode: "repel" };
   return s;
 }
 
@@ -80,6 +85,7 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
   scene.scene.add(key);
 
   const input = attachInput(canvas, scene.camera);
+  const autopilot = isTouchOnly() ? createAutopilot(input.state) : null;
   let currentMode: import("./settings").VoxelMode = settings.mode;
 
   let pathD = "";
@@ -219,6 +225,7 @@ export function init(canvas: HTMLCanvasElement, options: InitOptions = {}): Voxe
 
     const active = activeRef;
     const ctx: ModeContext = buildCtx(dt);
+    autopilot?.step(dt); // ghost-swipe the synthetic cursor on touch devices
     applyIdle(settings.idle, { bodies, homes: baseHomes, seeds, voxelSize, root: scene.root, t });
     const mode = getMode(currentMode);
     mode.beforeStep?.(ctx);

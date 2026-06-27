@@ -46,11 +46,47 @@
     "image": "https://uploads-ssl.webflow.com/636ab6ba0e1bd250e3aaedaf/65ef146b4576693f0c5d825b_OG%20image.png",
     "fetchedAt": 1776714008860
   },
+  "https://github.com/hossain-khan/trmnl-plugin-template": {
+    "title": "GitHub - hossain-khan/trmnl-plugin-template: Quick starter template plugin for TRMNL",
+    "description": "Quick starter template plugin for TRMNL. Contribute to hossain-khan/trmnl-plugin-template development by creating an account on GitHub.",
+    "image": "https://opengraph.githubassets.com/9ae083f421422be025cdd53284f5254140927dfcf97bb795f30060299c6d68de/hossain-khan/trmnl-plugin-template",
+    "fetchedAt": 1782558577031
+  },
   "https://github.com/raspberrypi/rpi-imager/releases/tag/v1.9.6": {
     "title": "Release v1.9.6 · raspberrypi/rpi-imager",
     "description": "What's Changed\n\nREADME: Fix script name typo by @ahresse in #1114\nUpdated Russian translations by @nafanz in #1118\nItalian language update by @bovirus in #1112\n1.9.6: Fix roll-up by @tdewey-rpi in ...",
     "image": "https://opengraph.githubassets.com/d68f48d23d5884cca49e47bbc3bdc7e1b57fa40ecb3740f3d3dfa6c6f07e4417/raspberrypi/rpi-imager/releases/tag/v1.9.6",
     "fetchedAt": 1777377577213
+  },
+  "https://github.com/usetrmnl/trmnl-agent-skills": {
+    "title": "GitHub - usetrmnl/trmnl-agent-skills: trmnl.com template writer agent's prompts and skills",
+    "description": "trmnl.com template writer agent's prompts and skills - usetrmnl/trmnl-agent-skills",
+    "image": "https://opengraph.githubassets.com/0d18642b67e5b2d76bcf3915d179e3bb3c396cc7d7392541c2880ace4fdf46ff/usetrmnl/trmnl-agent-skills",
+    "fetchedAt": 1782558577031
+  },
+  "https://github.com/usetrmnl/trmnl-agent-skills/blob/main/skills/trmnl/SKILL.md": {
+    "title": "trmnl-agent-skills/skills/trmnl/SKILL.md at main · usetrmnl/trmnl-agent-skills",
+    "description": "trmnl.com template writer agent's prompts and skills - usetrmnl/trmnl-agent-skills",
+    "image": "https://opengraph.githubassets.com/0d18642b67e5b2d76bcf3915d179e3bb3c396cc7d7392541c2880ace4fdf46ff/usetrmnl/trmnl-agent-skills",
+    "fetchedAt": 1782558577031
+  },
+  "https://github.com/usetrmnl/trmnl-liquid": {
+    "title": "GitHub - usetrmnl/trmnl-liquid: Liquid templating engine for TRMNL plugins.",
+    "description": "Liquid templating engine for TRMNL plugins. Contribute to usetrmnl/trmnl-liquid development by creating an account on GitHub.",
+    "image": "https://opengraph.githubassets.com/ec90e1b749b6bcdba9071ca5910ed91509acf2fe28443d69043f0b65860aefcd/usetrmnl/trmnl-liquid",
+    "fetchedAt": 1782558577031
+  },
+  "https://github.com/usetrmnl/trmnlp": {
+    "title": "GitHub - usetrmnl/trmnlp: a local dev server for building TRMNL plugins",
+    "description": "a local dev server for building TRMNL plugins. Contribute to usetrmnl/trmnlp development by creating an account on GitHub.",
+    "image": "https://opengraph.githubassets.com/1abb055e308deb6da6ef6da8148b3c6f63f6d6dfbbc7d9d8826a2460b8d1ee93/usetrmnl/trmnlp",
+    "fetchedAt": 1782558577031
+  },
+  "https://help.trmnl.com/en/articles/12386214-grayscale-1-bit-2-bit-4-bit-in-framework": {
+    "title": "Grayscale: 1-bit, 2-bit, 4-bit in Framework | TRMNL Help Center",
+    "description": "The plugin design Framework supports 16 levels of greyscale, with and without dithering depending on hardware/firmware capabilities and plugin settings. 1bit, 2bit, 4bit.",
+    "image": "https://downloads.intercomcdn.com/i/o/v9ws3u2x/617860/0719b051b2786587572435169af6/15dbde1828ef9f85e25740f9aad788d4.jpg",
+    "fetchedAt": 1782558577031
   },
   "https://hub.docker.com/": {
     "title": "Docker Hub Container Image Library | App Containerization",
@@ -87,6 +123,42 @@
     "title": "Downloads",
     "image": "https://www.proxmox.com/images/proxmox/Proxmox-logo-stacked-1240.png",
     "fetchedAt": 1776775628275
+  },
+  "https://raw.githubusercontent.com/usetrmnl/trmnl-agent-skills/main/skills/trmnl/references/agent_prompt.md": {
+    "failed": true,
+    "fetchedAt": 1782558577031
+  },
+  "https://raw.githubusercontent.com/usetrmnl/trmnl-agent-skills/main/skills/trmnl/references/framework_v3_guide.md": {
+    "failed": true,
+    "fetchedAt": 1782558577031
+  },
+  "https://raw.githubusercontent.com/usetrmnl/trmnl-agent-skills/main/skills/trmnl/references/template_guide.md": {
+    "failed": true,
+    "fetchedAt": 1782558577031
+  },
+  "https://rubyinstaller.org": {
+    "title": "RubyInstaller for Windows",
+    "description": "The easy way to install Ruby on Windows This is a self-contained Windows-based installer that includes the Ruby language, an execution environment, important...",
+    "fetchedAt": 1782558577031
+  },
+  "https://shopify.github.io/liquid/": {
+    "title": "Liquid template language",
+    "description": "Documentation for the Liquid template language, created by Shopify.",
+    "fetchedAt": 1782558577031
+  },
+  "https://trmnl.com/framework": {
+    "title": "TRMNL Framework",
+    "description": "Framework UI.",
+    "image": "https://trmnl.com/assets/og/framework-d6a2d550ab75bcc0ee193460fe5eadd12e6e074c1cbbeef8f5078eb44fbe5d90.png",
+    "fetchedAt": 1782558577031
+  },
+  "https://trmnl.hpi.church": {
+    "title": "LaraPaper",
+    "fetchedAt": 1782558577031
+  },
+  "https://trmnl.hpi.church/plugins": {
+    "title": "LaraPaper",
+    "fetchedAt": 1782558577031
   },
   "https://www.home-assistant.io/": {
     "title": "Home Assistant",

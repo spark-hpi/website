@@ -31,13 +31,13 @@ const formattedDate = date?.replaceAll("-", "·");
           </span>
         ) : null
       }
-      <span><strong>{pageCount} pages</strong> · {wordsK}k words</span>
+      <span><strong>{pageCount} {pageCount > 1? (<strong>pages</strong>) : <strong>page</strong>}</strong> · {wordsK}k words</span>
     </div>
   </div>
   <div class="ws-cover-large">
     {
       cover ? (
-        <img src={cover} alt="" />
+        <img src={cover} alt="" decoding="async" />
       ) : (
         <span class="placeholder">cover image · 4:3</span>
       )

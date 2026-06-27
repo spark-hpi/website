@@ -151,8 +151,9 @@ const previewJson = JSON.stringify(previewMap)
           const el = ensurePop();
           el.querySelector(".lp-tag").textContent = p.tag || "";
           const titleEl = el.querySelector(".lp-title");
-          titleEl.textContent = p.title || "";
           const dest = p.href || a.getAttribute("href") || "#";
+          // Always give the anchor an accessible name (a11y: empty <a> has none).
+          titleEl.textContent = p.title || dest;
           titleEl.setAttribute("href", dest);
           if (/^https?:\/\//i.test(dest)) {
             titleEl.setAttribute("target", "_blank");

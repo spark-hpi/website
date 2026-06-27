@@ -12,6 +12,14 @@
   display: block;
   touch-action: none;
 }
+/* Touch devices: let swipes scroll the page instead of being captured by the
+   star. It's non-interactive here — the autopilot animates it. */
+@media (hover: none) and (pointer: coarse) {
+  .voxel-star canvas.voxel-canvas {
+    touch-action: auto;
+    pointer-events: none;
+  }
+}
 .voxel-star .voxel-star-fallback {
   position: absolute;
   inset: 0;
