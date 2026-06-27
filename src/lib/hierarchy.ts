@@ -1,4 +1,5 @@
 import { comparePages } from "./sort-key";
+import { displayTitle, nodeSlug, nodeUrl } from "./routes";
 
 export interface RawPage {
   filename: string;
@@ -17,6 +18,12 @@ export interface HierNode extends RawPage {
   parent?: HierNode;
   children: HierNode[];
   workshopRootFilename: string;
+  // Precomputed display strings — the single source of truth. Filled once in
+  // buildHierarchy via routes.ts; every consumer reads these instead of
+  // re-deriving them, so routing and wikilinks can't disagree.
+  displayTitle: string;
+  slug: string;
+  url: string;
 }
 
 export interface Hierarchy {
@@ -40,6 +47,9 @@ export function buildHierarchy(pages: RawPage[]): Hierarchy {
       depth: 0,
       children: [],
       workshopRootFilename: p.filename,
+      displayTitle: "",
+      slug: "",
+      url: "",
     };
     byFilename.set(p.filename, node);
     byBasename.set(basename(p.filename), node);
@@ -84,6 +94,18 @@ export function buildHierarchy(pages: RawPage[]): Hierarchy {
   // Sort children of every node
   for (const node of byFilename.values()) {
     node.children.sort(comparePages);
+  }
+
+  // Precompute display title + slug for every node, then the URL (which needs
+  // the node's own slug AND its workshop root's slug). Done here, once, so
+  // routes.ts is the only code that knows how a Node becomes a string.
+  for (const node of byFilename.values()) {
+    node.displayTitle = displayTitle(node);
+    node.slug = nodeSlug(node);
+  }
+  for (const node of byFilename.values()) {
+    const root = byFilename.get(node.workshopRootFilename)!;
+    node.url = nodeUrl(node, root.slug);
   }
 
   // Collect workshops (depth-0 nodes), sorted

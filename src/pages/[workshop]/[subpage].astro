@@ -6,7 +6,6 @@ import ProgressRuler from "../../components/ProgressRuler.astro";
 import Footer from "../../components/Footer.astro";
 import { loadContent } from "../../lib/load-content";
 import { renderSubpage } from "../../lib/render-workshop";
-import { slugify, stripNumericPrefix, shortName } from "../../lib/slugify";
 
 export async function getStaticPaths() {
   const { hierarchy } = loadContent();
@@ -14,10 +13,8 @@ export async function getStaticPaths() {
   for (const node of hierarchy.byFilename.values()) {
     if (node.depth !== 2) continue;
     const root = hierarchy.byFilename.get(node.workshopRootFilename)!;
-    const workshopTitle = root.title ?? stripNumericPrefix(shortName(root.filename));
-    const subTitle = node.title ?? stripNumericPrefix(shortName(node.filename));
     out.push({
-      params: { workshop: slugify(workshopTitle), subpage: slugify(subTitle) },
+      params: { workshop: root.slug, subpage: node.slug },
       props: { filename: node.filename },
     });
   }
@@ -28,14 +25,14 @@ const { filename } = Astro.props as { filename: string };
 const { hierarchy } = loadContent();
 const node = hierarchy.byFilename.get(filename)!;
 const root = hierarchy.byFilename.get(node.workshopRootFilename)!;
-const workshopTitle = root.title ?? stripNumericPrefix(shortName(root.filename));
-const subTitle = node.title ?? stripNumericPrefix(shortName(node.filename));
+const workshopTitle = root.displayTitle;
+const subTitle = node.displayTitle;
 const rendered = await renderSubpage(node, hierarchy);
 ---
 
 <Base title={`${subTitle} — ${workshopTitle} — Spark`}>
   <section class="ws-page">
-    <BackLink href={`/${slugify(workshopTitle)}`} label={workshopTitle} />
+    <BackLink href={root.url} label={workshopTitle} />
     <header class="sub-hero">
       <p class="crumb">{workshopTitle} / {subTitle}</p>
       <h1>{subTitle}</h1>

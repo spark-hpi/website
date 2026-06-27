@@ -9,29 +9,18 @@ import type { Root as MdastRoot, Heading } from "mdast";
 import { remarkWikilinks, type WikiResolver } from "./remark-wikilinks";
 import { remarkCallouts } from "./remark-callouts";
 import { rehypeLinkPreviewKeys } from "./rehype-link-preview-keys";
-import { slugify, stripNumericPrefix, shortName } from "./slugify";
+import { slugify } from "./slugify";
 import type { HierNode, Hierarchy } from "./hierarchy";
 import { extractToc, type TocItem } from "./extract-toc";
 
+// Resolve a wikilink name ([[Some Page]]) to its URL by looking the page up in
+// the hierarchy and reading its precomputed url. The remark plugin appends any
+// #heading anchor itself.
 export function buildWikiResolver(hierarchy: Hierarchy): WikiResolver {
   return (name: string) => {
     const node = hierarchy.byBasename.get(name);
     if (!node) return { broken: true, url: "" };
-    const root = hierarchy.byFilename.get(node.workshopRootFilename)!;
-    const workshopSlug = slugify(
-      root.title ?? stripNumericPrefix(shortName(root.filename)),
-    );
-    if (node.depth === 0) return { url: `/${workshopSlug}` };
-    if (node.depth === 1) {
-      const childSlug = slugify(
-        node.title ?? stripNumericPrefix(shortName(node.filename)),
-      );
-      return { url: `/${workshopSlug}#${childSlug}` };
-    }
-    const subSlug = slugify(
-      node.title ?? stripNumericPrefix(shortName(node.filename)),
-    );
-    return { url: `/${workshopSlug}/${subSlug}` };
+    return { url: node.url };
   };
 }
 
@@ -53,7 +42,7 @@ function chapterHeading(title: string): Heading {
 function assembleWorkshopTree(workshop: HierNode): MdastRoot {
   const rootTree = parseMarkdown(workshop.rawContent ?? "");
   for (const child of workshop.children) {
-    const title = child.title ?? stripNumericPrefix(shortName(child.filename));
+    const title = child.displayTitle;
     const childTree = parseMarkdown(child.rawContent ?? "");
     rootTree.children.push(chapterHeading(title));
     rootTree.children.push(...childTree.children);
@@ -213,19 +202,6 @@ function extractSubheadings(
   return out;
 }
 
-function nodeUrl(target: HierNode, hierarchy: Hierarchy): string {
-  const root = hierarchy.byFilename.get(target.workshopRootFilename)!;
-  const rootSlug = slugify(
-    root.title ?? stripNumericPrefix(shortName(root.filename)),
-  );
-  const targetSlug = slugify(
-    target.title ?? stripNumericPrefix(shortName(target.filename)),
-  );
-  if (target.depth === 0) return `/${rootSlug}`;
-  if (target.depth === 1) return `/${rootSlug}#${targetSlug}`;
-  return `/${rootSlug}/${targetSlug}`;
-}
-
 function collectLinkedPages(
   sources: Array<string | undefined>,
   excludeFilenames: Set<string>,
@@ -244,13 +220,9 @@ function collectLinkedPages(
       if (excludeFilenames.has(target.filename)) continue;
       if (seen.has(target.filename)) continue;
       seen.add(target.filename);
-      const title =
-        target.title ?? stripNumericPrefix(shortName(target.filename));
-      const parent = target.parent;
-      const parentTitle = parent
-        ? (parent.title ?? stripNumericPrefix(shortName(parent.filename)))
-        : undefined;
-      const url = nodeUrl(target, hierarchy);
+      const title = target.displayTitle;
+      const parentTitle = target.parent?.displayTitle;
+      const url = target.url;
       const headings = extractSubheadings(target.rawContent, url);
       out.push({ title, url, parentTitle, headings });
     }
@@ -330,9 +302,7 @@ export async function renderWorkshop(
   const resolver = buildWikiResolver(hierarchy);
   const dir = workshopDir(workshop.filename);
   const tree = assembleWorkshopTree(workshop);
-  const pageSlug = slugify(
-    workshop.title ?? stripNumericPrefix(shortName(workshop.filename)),
-  );
+  const pageSlug = workshop.slug;
 
   const processor = unified()
     .use(remarkGfm)
@@ -377,13 +347,7 @@ export async function renderSubpage(
   const dir = workshopDir(page.filename);
   const tree = parseMarkdown(md);
   const root = hierarchy.byFilename.get(page.workshopRootFilename)!;
-  const wsSlug = slugify(
-    root.title ?? stripNumericPrefix(shortName(root.filename)),
-  );
-  const subSlug = slugify(
-    page.title ?? stripNumericPrefix(shortName(page.filename)),
-  );
-  const pageSlug = `${wsSlug}/${subSlug}`;
+  const pageSlug = `${root.slug}/${page.slug}`;
 
   const processor = unified()
     .use(remarkGfm)

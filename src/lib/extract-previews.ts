@@ -6,7 +6,7 @@ import type { Root } from "mdast";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { slugify, stripNumericPrefix, shortName } from "./slugify";
+import { slugify } from "./slugify";
 import type { Hierarchy } from "./hierarchy";
 
 export type PreviewKind =
@@ -54,10 +54,9 @@ async function doBuild(hierarchy: Hierarchy): Promise<PreviewMap> {
 
   for (const node of hierarchy.byFilename.values()) {
     const root = hierarchy.byFilename.get(node.workshopRootFilename)!;
-    const wsTitle = root.title ?? stripNumericPrefix(shortName(root.filename));
-    const wsSlug = slugify(wsTitle);
-    const nodeTitle =
-      node.title ?? stripNumericPrefix(shortName(node.filename));
+    const wsTitle = root.displayTitle;
+    const wsSlug = root.slug;
+    const nodeTitle = node.displayTitle;
     const tree = parse(node.rawContent ?? "");
 
     if (node.depth === 0) {
@@ -78,7 +77,7 @@ async function doBuild(hierarchy: Hierarchy): Promise<PreviewMap> {
         };
       }
     } else if (node.depth === 1) {
-      const chapterSlug = slugify(nodeTitle);
+      const chapterSlug = node.slug;
       out[`/${wsSlug}#${chapterSlug}`] = {
         kind: "chapter",
         tag: "CHAPTER",
@@ -94,7 +93,7 @@ async function doBuild(hierarchy: Hierarchy): Promise<PreviewMap> {
         };
       }
     } else {
-      const subSlug = slugify(nodeTitle);
+      const subSlug = node.slug;
       out[`/${wsSlug}/${subSlug}`] = {
         kind: "subpage",
         tag: "PAGE",

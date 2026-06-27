@@ -7,24 +7,19 @@ import ProgressRuler from "../../components/ProgressRuler.astro";
 import Footer from "../../components/Footer.astro";
 import { loadContent } from "../../lib/load-content";
 import { renderWorkshop } from "../../lib/render-workshop";
-import { slugify, stripNumericPrefix, shortName } from "../../lib/slugify";
 
 export async function getStaticPaths() {
   const { hierarchy } = loadContent();
-  return hierarchy.workshops.map((w) => {
-    const title = w.title ?? stripNumericPrefix(shortName(w.filename));
-    return {
-      params: { workshop: slugify(title) },
-      props: { workshopFilename: w.filename },
-    };
-  });
+  return hierarchy.workshops.map((w) => ({
+    params: { workshop: w.slug },
+    props: { workshopFilename: w.filename },
+  }));
 }
 
 const { workshopFilename } = Astro.props as { workshopFilename: string };
 const { hierarchy } = loadContent();
 const workshop = hierarchy.byFilename.get(workshopFilename)!;
-const title =
-  workshop.title ?? stripNumericPrefix(shortName(workshop.filename));
+const title = workshop.displayTitle;
 const rendered = await renderWorkshop(workshop, hierarchy);
 ---
 
