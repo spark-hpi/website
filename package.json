@@ -12,7 +12,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "sync": "git -C content pull --ff-only || git clone --depth 1 https://github.com/spark-hpi/docs content",
-    "deploy": "npm run sync-content && astro build && wrangler pages deploy dist --project-name=spark",
+    "deploy": "npm run sync && astro build && wrangler pages deploy dist --project-name=spark",
     "refresh-link-previews": "rm -f src/data/link-previews.json && echo '{}' > src/data/link-previews.json",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
