@@ -50,3 +50,6 @@ public/images/
 
 # workshop content — checkout of github.com/spark-hpi/docs (see .env.example)
 content/
+
+# playwright mcp test artifacts
+.playwright-mcp/

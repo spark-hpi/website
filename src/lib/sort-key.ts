@@ -1,3 +1,11 @@
+/**
+ * sort-key.ts — decide the order of sibling pages within a workshop.
+ *
+ * Responsibility: comparePages is the ordering rule used to sort a node's
+ *   children. Priority: explicit `order` frontmatter → a leading number in the
+ *   filename ("01 Intro.md" sorts before "02 Setup.md") → alphabetical by title.
+ * Used by: hierarchy.ts when wiring up children.
+ */
 const PREFIX_RE = /^(\d+)[\s\-_]/;
 
 export interface SortablePage {

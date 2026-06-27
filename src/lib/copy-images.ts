@@ -1,3 +1,12 @@
+/**
+ * copy-images.ts — make workshop images available to the built site.
+ *
+ * Responsibility: mirror each workshop's images/ folder from CONTENT_PATH into
+ *   this project's public/images/<workshop>/ so the markdown's image links
+ *   resolve. Runs once at config-evaluation time (called from astro.config.mjs);
+ *   public/images/ is gitignored because it is regenerated every build.
+ * Gotcha: this wipes and rewrites public/images on each run — don't hand-edit it.
+ */
 import {
   existsSync,
   mkdirSync,

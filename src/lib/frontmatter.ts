@@ -1,3 +1,12 @@
+/**
+ * frontmatter.ts — read and normalize a markdown file's YAML frontmatter.
+ *
+ * Responsibility: parse the `---` block at the top of each page into a typed,
+ *   normalized shape. The important non-obvious job is `up:` — an Obsidian
+ *   wikilink like `up: "[[How to Home Server]]"` names this page's parent; we
+ *   extract the bare target name so hierarchy.ts can wire the tree.
+ * In  → out: raw file source → { data: normalized frontmatter, content: body }.
+ */
 import matter from "gray-matter";
 
 const WIKI_RE = /^\[\[(.+?)(?:\|.+?)?\]\]$/;

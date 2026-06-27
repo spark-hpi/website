@@ -1,3 +1,15 @@
+/**
+ * rehype-link-preview-keys.ts — tag links so the hover-preview script can find them.
+ *
+ * Responsibility: stamp a `data-preview-key` attribute on every <a> whose target
+ *   has a preview. The key is the lookup into the preview map built by
+ *   extract-previews.ts: external links key by their full URL, internal links by
+ *   their absolute path, and same-page `#anchor` links by `/<pageSlug>#anchor`.
+ * Used by: render-workshop.ts (in the render pipeline) + the popover script in
+ *   Base.astro, which reads data-preview-key on hover.
+ * Gotcha: the key format here MUST match the keys extract-previews.ts generates,
+ *   or the popover finds nothing and silently shows no card.
+ */
 import type { Plugin } from "unified";
 import type { Root } from "hast";
 import { visit } from "unist-util-visit";

@@ -1,3 +1,17 @@
+/**
+ * hierarchy.ts — turn a flat list of pages into the 3-tier workshop tree.
+ *
+ * Responsibility: the site's structural model. It resolves each page's parent
+ *   (from the `up:` frontmatter), computes its tier (Workshop=0 → Chapter=1 →
+ *   Subpage=2), wires children (sorted), and — crucially — precomputes each
+ *   node's displayTitle / slug / url ONCE (via routes.ts) so every other module
+ *   reads those fields instead of re-deriving them.
+ * Lookups it exposes: byFilename ("How to Home Server/01 Intro.md") and
+ *   byBasename ("01 Intro" — used to resolve wikilinks by name).
+ * Gotcha: byBasename is keyed by bare filename, so two files with the same name
+ *   in different workshops collide (last one wins). Fine for today's content;
+ *   revisit if the docs repo grows duplicate basenames.
+ */
 import { comparePages } from "./sort-key";
 import { displayTitle, nodeSlug, nodeUrl } from "./routes";
 

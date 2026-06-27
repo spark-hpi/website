@@ -1,3 +1,15 @@
+/**
+ * remark-callouts.ts — render Obsidian callouts.
+ *
+ * Responsibility: a remark plugin that turns a blockquote beginning with
+ *   `> [!note] Optional title` into <aside class="callout callout-note"> with a
+ *   title row. Unknown types fall back to "note". Example:
+ *     > [!warning] Heads up      →   <aside class="callout callout-warning">…
+ *     > body text
+ * Gotcha: Obsidian fold markers (`[!note]+` / `[!note]-`) parse but are ignored;
+ *   callouts are always expanded. (A maintained alternative is the rehype-callouts
+ *   package if this ever needs nesting/fold support.)
+ */
 import type { Plugin } from "unified";
 import type { Root, Blockquote, Paragraph, Text } from "mdast";
 import { visit } from "unist-util-visit";

@@ -1,3 +1,17 @@
+/**
+ * remark-wikilinks.ts — render Obsidian wikilinks inside markdown.
+ *
+ * Responsibility: a remark plugin that rewrites the four Obsidian forms into
+ *   real links/images:
+ *     [[Page]]                → link to that page
+ *     [[Page|shown text]]     → link with alias text
+ *     [[Page#Heading]]        → link to a heading anchor on that page
+ *     ![[image.png|200|cap]]  → image embed (optional width + caption)
+ *   Page targets are resolved by a WikiResolver (built in render-workshop.ts
+ *   from the hierarchy). Unresolved names render as <span class="broken">.
+ * Gotcha: the "#Heading" anchor is slugified with the same slugify() used for
+ *   heading ids — keep those two in sync (see slugify.ts).
+ */
 import type { Plugin } from "unified";
 import type { Root, Text, Link, PhrasingContent } from "mdast";
 import { visit, SKIP } from "unist-util-visit";

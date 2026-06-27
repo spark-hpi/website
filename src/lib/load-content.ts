@@ -1,3 +1,15 @@
+/**
+ * load-content.ts — read the workshop markdown folder off disk into a hierarchy.
+ *
+ * Responsibility: scan CONTENT_PATH (root .md files + one level of workshop
+ *   subfolders), parse each file's frontmatter, auto-parent files to the
+ *   workshop folder they live in, and hand the result to buildHierarchy. This is
+ *   the single entry point that turns "a folder of markdown" into the in-memory
+ *   site structure.
+ * Used by: every page (in getStaticPaths and frontmatter) and astro.config.mjs.
+ * Gotcha: CONTENT_PATH points OUTSIDE this repo (a checkout of the docs content
+ *   repo). Without it set, loadContent throws and the site can't build.
+ */
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { parseFrontmatter } from "./frontmatter";

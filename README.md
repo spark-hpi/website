@@ -7,18 +7,21 @@ a static Astro site.
 ## Prerequisites
 
 - Node.js ≥ 22.12
-- A folder of workshop Markdown files (the path you set in `.env`).
+- The workshop content. The canonical source is the separate repo
+  **github.com/spark-hpi/docs** (workshops live under its `res/` folder).
 
 ## Setup
 
 ```sh
 npm install
-cp .env.example .env       # or create .env directly
-# edit .env so CONTENT_PATH points at your workshop folder
+git clone https://github.com/spark-hpi/docs.git content   # content/ is gitignored
+cp .env.example .env
+# set CONTENT_PATH=./content/res in .env
 npm run dev
 ```
 
-`CONTENT_PATH` is an absolute path to a folder structured like this:
+`CONTENT_PATH` points at the folder of workshops (here `./content/res`). Any
+folder with this structure works — it does not have to be the docs repo:
 
 ```
 <CONTENT_PATH>/
@@ -72,5 +75,21 @@ workshop whose name matches their enclosing folder.
 npm run dev       # dev server at http://localhost:4321 with hot reload
 npm run build     # static build into dist/
 npm run preview   # preview the built site locally
+npm run deploy    # build + deploy to Cloudflare Pages (project "spark")
 npm test          # vitest
 ```
+
+To publish the latest content, refresh your `./content` checkout
+(`git -C content pull`) and run `npm run deploy`.
+
+## Where to look in the code
+
+```
+src/lib/load-content.ts  reads the markdown folder off disk
+src/lib/hierarchy.ts     files → the workshop → chapter → subpage tree
+src/lib/routes.ts        the ONE place a page's title, slug, and URL are decided
+src/lib/render-workshop.ts  markdown → HTML (the render pipeline)
+src/pages/               the routes (home, workshop, subpage, info, 404)
+```
+
+Every module has a header comment explaining what it owns — start there.
