@@ -8,7 +8,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev          # astro dev — http://localhost:4321
 npm run build        # static build into dist/
 npm run preview      # serve the built site
-npm run deploy       # build + wrangler pages deploy (Cloudflare Pages, project "spark")
+npm run sync-content # git pull (or clone) the workshop content into ./content
+npm run deploy       # sync-content + build + wrangler pages deploy (Cloudflare Pages, project "spark")
 npm test             # vitest run --passWithNoTests
 npm run test:watch   # vitest in watch mode
 npx vitest run path/to/file.test.ts                  # single test file
@@ -16,7 +17,7 @@ npx vitest run -t "pattern"                          # filter by test name
 npm run refresh-link-previews                        # wipe src/data/link-previews.json so external OG metadata is re-fetched on next build
 ```
 
-Requires Node ≥ 22.12 and a `.env` with `CONTENT_PATH=<absolute path>` pointing at the workshop Markdown folder. Without it, `loadContent()` throws and the site cannot build.
+Requires Node ≥ 22.12 and a `.env` with `CONTENT_PATH` pointing at the workshop Markdown folder. The canonical content is the separate repo **github.com/spark-hpi/docs**; `npm run sync-content` clones/pulls it into `./content` (gitignored), and `.env` sets `CONTENT_PATH=./content/res`. Without `CONTENT_PATH`, `loadContent()` throws and the site cannot build.
 
 ## Architecture
 
@@ -27,22 +28,25 @@ This is a static Astro site that compiles a folder of Obsidian-flavored Markdown
 1. **`astro.config.mjs`** — at config evaluation time, calls `copyImages(CONTENT_PATH, cwd)` (`src/lib/copy-images.ts`) which mirrors `<CONTENT_PATH>/<workshop>/images/` into `public/images/<workshop>/`. Editing `astro.config.mjs` re-runs this.
 2. **`src/lib/load-content.ts`** scans `CONTENT_PATH` for `.md` files at root and one level deep. It parses frontmatter (`src/lib/frontmatter.ts`) and produces `RawPage`s. Pages in a workshop subdirectory with no explicit `up:` are **auto-parented** to the workshop whose name matches the enclosing folder.
 3. **`src/lib/hierarchy.ts`** turns `RawPage[]` into a 3-tier `Hierarchy` (`depth: 0 | 1 | 2`). Lookups: `byFilename` (relpath, e.g. `"01 Foo/02 Bar.md"`) and `byBasename` (filename without extension, used by wikilink resolution). Children are sorted via `comparePages` in `src/lib/sort-key.ts` (numeric prefix → order frontmatter → title).
-4. **`src/content.config.ts`** wraps the hierarchy as an Astro content collection (`workshops`) using a custom loader. Each `HierNode` becomes one entry. This is mostly for Astro plumbing — pages render directly from `loadContent()` rather than via `getCollection()`.
+4. **`src/content.config.ts`** declares the `docs` content collection: a `glob()` loader over every `.md` file under `CONTENT_PATH`, with `generateId: ({entry}) => entry` so an entry's `id` equals its hierarchy `filename` (e.g. `"How to Home Server/Proxmox.md"`). Pages render **through this collection** — the route files look up the entry by `node.filename` and call Astro's `render(entry)` → `<Content/>` + `headings[]`. The *structure* (parent/tier/slug/url) still comes from `load-content.ts` + `hierarchy.ts` (the synchronous fs scan), NOT the collection; the collection is purely the render provider.
 
 ### Markdown rendering
 
-`src/lib/render-workshop.ts` exports `renderWorkshop` (workshop root: inlines all depth-1 children as chapter sections separated by `<h2 class="chapter-divider">`) and `renderSubpage` (depth-2). Both use the same `unified` pipeline:
+Rendering is **native Astro** — there is no hand-rolled `unified` processor. Markdown is parsed and rendered by Astro's `render(entry)`, and the project's remark/rehype plugins are registered in **`astro.config.mjs`** under `markdown: { remarkPlugins, rehypePlugins }`. `smartypants: false` keeps straight quotes/dashes; `syntaxHighlight: false` + `rehypeHighlight` keeps highlight.js (`.hljs` spans) so the copy button and theme CSS keep working. Astro's built-in GFM runs around these plugins.
 
-`remarkGfm → remarkCallouts → remarkWikilinks → remarkRehype → addHeadingIds → wrapTables → transformImages → rehypeLinkPreviewKeys → rehypeHighlight → rehypeStringify`
+Pipeline order (after Astro's parse + GFM):
+`remarkCallouts → remarkWikilinks → [Astro mdast→hast] → rehypeHeadingIds → rehypeWrapTables → rehypeImagePaths → rehypeLinkPreviewKeys → rehypeHighlight`
 
-- **`remark-wikilinks.ts`** turns `[[Name]]`, `[[Name|alias]]`, `[[Name#Heading]]`, and image embeds `![[file.png|200|caption]]` into mdast links/images. Resolution is via the `WikiResolver` built from the hierarchy in `buildWikiResolver`. Unresolved names render as `<span class="broken">` (muted strikethrough).
+- **`rehype-markdown.ts`** holds three small rehype plugins: `rehypeHeadingIds` forces a `slugify()` id on every h1–h6 (overriding Astro's github-slugger, so all ids come from the single slugger); `rehypeWrapTables` wraps `<table>` for horizontal scroll; `rehypeImagePaths` rewrites `images/foo.png` → `/images/<workshopDir>/foo.png` (workshop dir = last two segments of the entry path), treats a numeric `title` as a max-width, and promotes lone-image paragraphs into `<figure class="md-figure">` with `alt` as caption (unless `alt` looks like a filename).
+- **`remark-wikilinks.ts`** turns `[[Name]]`, `[[Name|alias]]`, `[[Name#Heading]]`, and image embeds `![[file.png|200|caption]]` into mdast links/images. Resolution is via the `WikiResolver` built from the hierarchy by `buildWikiResolver` (also in this file), called once at config time in `astro.config.mjs`. Unresolved names render as `<span class="broken">` (muted strikethrough).
 - **`remark-callouts.ts`** parses Obsidian `> [!type] Title` callouts. Fold markers (`+`/`-`) parse but are ignored.
-- **`transformImages`** (in `render-workshop.ts`): rewrites `images/foo.png` → `/images/<workshopDir>/foo.png`, treats a numeric `title` attribute as a max-width, and promotes lone-image paragraphs into `<figure class="md-figure">` with the `alt` becoming a caption (unless `alt` looks like a filename).
-- **`extract-toc.ts`** scans the rendered hast for h1/h2/h3 plus chapter-divider markers; `integrateLinkedIntoToc` merges in wiki-linked pages under their parent chapter. Glossary pages (title matching `/^glossary$/i`) are split out for separate rendering.
+- **`toc.ts`** builds the sidebar TOC from Astro's `headings[]` (`headingsToToc` recomputes each id as `slugify(heading.text)`, ignoring Astro's own `headings[].slug`, so the TOC ids match the DOM ids by construction). The two route files feed the result to `TocRail.astro` + `ScrollSpy.astro`. Wiki-linked sub-pages are merged in under their parent chapter; glossary pages (title `/^glossary$/i`) are split out. The `Footnotes` heading is filtered out of the TOC.
+
+**Single-slugger invariant:** every heading id, every `[[Page#Heading]]` wikilink anchor, every link-preview heading key, and the TOC's `data-toc-link` all come from the same `slugify()`. If you swap the heading-id generator you must swap the others, or in-page anchors silently 404.
 
 ### Link previews (hover popovers)
 
-`src/lib/extract-previews.ts` runs at build time inside `Base.astro` (memoized via `buildPreviewMap`). It walks every node to register internal preview entries (workshop / chapter / subpage / heading-anchored), then fetches OpenGraph metadata for any external `https?://` link. The cache is committed at `src/data/link-previews.json` — entries are reused on subsequent builds; `npm run refresh-link-previews` resets it. Failed fetches are remembered for 7 days.
+`src/lib/previews.ts` runs at build time inside `Base.astro` (memoized via `buildPreviewMap`). It walks every node to register internal preview entries (workshop / chapter / subpage / heading-anchored), then fetches OpenGraph metadata for any external `https?://` link. The cache is committed at `src/data/link-previews.json` — entries are reused on subsequent builds; `npm run refresh-link-previews` resets it. Failed fetches are remembered for 7 days.
 
 The preview map is serialized into a `<script type="application/json" id="link-previews">` tag in `Base.astro`; an inline script wires hover behavior. Anchor keys come from `rehype-link-preview-keys.ts`, which adds `data-preview-key` attributes during rendering.
 

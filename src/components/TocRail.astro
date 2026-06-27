@@ -3,12 +3,12 @@
  * TocRail.astro — the sticky "On this page" table-of-contents sidebar.
  *
  * Responsibility: render a flat TocItem[] as collapsible chapter groups. The
- *   grouping rule (the contract with render-workshop's TOC builder): an item is a
+ *   grouping rule (the contract with toc.ts's TOC builder): an item is a
  *   chapter heading when `tier === "chapter"` and it has no `href`; an item with
  *   an `href` is a linked sub-page (bucketed under "Options"); everything else is
  *   a plain in-page heading. Nested headings of a linked page go in `children`.
  * Props: items (the TOC) + optional glossary links shown below a divider.
- * DOM contract: emits `data-toc-link={id}` on in-page links so ProgressRuler can
+ * DOM contract: emits `data-toc-link={id}` on in-page links so ScrollSpy can
  *   highlight the active one. Keep that attribute if you change the markup.
  */
 import type { TocItem } from "../lib/toc";

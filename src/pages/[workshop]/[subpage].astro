@@ -2,7 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import BackLink from "../../components/BackLink.astro";
 import TocRail from "../../components/TocRail.astro";
-import ProgressRuler from "../../components/ProgressRuler.astro";
+import ScrollSpy from "../../components/ScrollSpy.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import Prose from "../../components/Prose.astro";
 import { getCollection, render } from "astro:content";
@@ -61,7 +61,7 @@ const toc = integrateLinkedIntoToc(headingsToToc(headings), regular);
       <Prose variant="subpage"><Content /></Prose>
     </div>
   </section>
-  <ProgressRuler items={toc} />
+  <ScrollSpy items={toc} />
   <SiteFooter />
 </Base>
 

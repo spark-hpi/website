@@ -10,7 +10,7 @@
  *   keys use. So every TOC anchor resolves and the scroll-spy lines up. We ignore
  *   Astro's headings[].slug (github-slugger) on purpose.
  * IN → OUT: AstroHeading[] (+ chapter Nodes) → TocItem[].
- * WHERE: called by the two route files; the result feeds TocRail + ProgressRuler.
+ * WHERE: called by the two route files; the result feeds TocRail + ScrollSpy.
  *   Linked-page and glossary integration lives in links.ts and runs on top.
  * CONTRACT (with TocRail): a chapter heading is `tier:"chapter"` with no href; an
  *   item with an href is a linked sub-page; nested headings go in `children`.

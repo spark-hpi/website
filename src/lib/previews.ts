@@ -1,3 +1,19 @@
+/**
+ * previews.ts — build the hover-card preview map at build time.
+ *
+ * WHAT: `buildPreviewMap(hierarchy)` walks every workshop/chapter/subpage/heading
+ *   and registers an internal Preview entry for each, then fetches OpenGraph
+ *   metadata for every external https? link found in the content. Returns a
+ *   PreviewMap keyed by the same lookup strings rehype-link-preview-keys.ts
+ *   stamps onto <a data-preview-key> (external → full URL, internal → absolute
+ *   path, same-page → `<pageBase>#anchor`). Base.astro serializes the map into a
+ *   <script type="application/json"> tag the hover script reads.
+ * WHY a committed cache: external OG fetches are slow and rate-limited, so results
+ *   are persisted to src/data/link-previews.json and reused across builds; failed
+ *   fetches are remembered for 7 days. `npm run refresh-link-previews` wipes it.
+ * GOTCHA: heading-anchor keys are slugify()'d — same slugger as the DOM ids, so
+ *   `<pageBase>#anchor` keys line up with real heading ids by construction.
+ */
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";

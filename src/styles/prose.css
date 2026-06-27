@@ -12,7 +12,7 @@
  *   chapter-divider rule) vs `.prose.subpage`.
  * WHERE: imported by components/Prose.astro, which owns the <article> wrapper.
  * GOTCHA: `h2.chapter-divider` is emitted by ChapterDivider/the renderer and is
- *   also a structural marker read by TocRail + ProgressRuler — keep the class.
+ *   also a structural marker read by TocRail + ScrollSpy — keep the class.
  */
 
 .prose {

@@ -1,7 +1,21 @@
 ---
+/**
+ * Base.astro — the page shell every route wraps itself in.
+ *
+ * Owns the things that must be identical on every page: the <head>, the global
+ * stylesheet, the pre-paint theme script (reads localStorage spark-theme +
+ * per-theme color overrides and sets data-theme / --bg/--fg/--link before first
+ * paint, so there's no flash), the site header/footer, and the link-preview
+ * hover system. At build time it calls buildPreviewMap(hierarchy) and serializes
+ * the result into <script type="application/json" id="link-previews">; an inline
+ * script wires hover popovers to any <a data-preview-key> (keys from
+ * rehype-link-preview-keys.ts, map from previews.ts).
+ * GOTCHA: the first page of a cold build takes ~50s — that's buildPreviewMap
+ * fetching external OpenGraph metadata, not a hang. It's memoized + disk-cached.
+ */
 import "../styles/global.css";
 import { loadContent } from "../lib/load-content";
-import { buildPreviewMap } from "../lib/extract-previews";
+import { buildPreviewMap } from "../lib/previews";
 interface Props {
   title: string;
   description?: string;

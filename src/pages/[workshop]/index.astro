@@ -3,7 +3,7 @@ import Base from "../../layouts/Base.astro";
 import BackLink from "../../components/BackLink.astro";
 import WorkshopHero from "../../components/WorkshopHero.astro";
 import TocRail from "../../components/TocRail.astro";
-import ProgressRuler from "../../components/ProgressRuler.astro";
+import ScrollSpy from "../../components/ScrollSpy.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import ChapterDivider from "../../components/ChapterDivider.astro";
 import Prose from "../../components/Prose.astro";
@@ -104,7 +104,7 @@ const wordCount = [workshop, ...workshop.children].reduce(
       </Prose>
     </div>
   </section>
-  <ProgressRuler items={toc} />
+  <ScrollSpy items={toc} />
   <SiteFooter />
 </Base>
 

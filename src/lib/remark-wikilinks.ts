@@ -7,8 +7,9 @@
  *     [[Page|shown text]]     → link with alias text
  *     [[Page#Heading]]        → link to a heading anchor on that page
  *     ![[image.png|200|cap]]  → image embed (optional width + caption)
- *   Page targets are resolved by a WikiResolver (built in render-workshop.ts
- *   from the hierarchy). Unresolved names render as <span class="broken">.
+ *   Page targets are resolved by a WikiResolver (built by buildWikiResolver in
+ *   this file from the hierarchy, at config time in astro.config.mjs).
+ *   Unresolved names render as <span class="broken">.
  * Gotcha: the "#Heading" anchor is slugified with the same slugify() used for
  *   heading ids — keep those two in sync (see slugify.ts).
  */

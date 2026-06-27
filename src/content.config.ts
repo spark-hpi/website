@@ -6,9 +6,9 @@
  *   (`render(entry)` → <Content/> + headings[]). This is what makes the markdown
  *   pipeline *native* — the remark/rehype plugins in astro.config.mjs process
  *   these entries.
- * WHY: replaces the hand-rolled unified processor that used to live in
- *   render-workshop.ts. Astro now owns parsing, plugin application, and code
- *   highlighting.
+ * WHY: replaces the hand-rolled unified processor the project used to run by
+ *   hand. Astro now owns parsing, plugin application, and code highlighting; the
+ *   remark/rehype plugins are registered in astro.config.mjs.
  * CONTRACT: an entry's `id` is its path relative to CONTENT_PATH, *with* the .md
  *   extension (e.g. "How to Home Server/Proxmox.md"). That id is identical to a
  *   hierarchy Node's `filename`, so the routes map Node → entry by `node.filename`.

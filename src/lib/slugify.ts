@@ -4,7 +4,7 @@
  * Responsibility: the project's ONE slugger, used for two things that must stay
  *   in lockstep: (1) page slugs — "01 How to Home Server" → "how-to-home-server"
  *   (via routes.ts), and (2) heading anchor ids — the `#some-heading` targets
- *   produced by addHeadingIds in render-workshop.ts and by wikilink "#heading"
+ *   produced by rehypeHeadingIds in rehype-markdown.ts and by wikilink "#heading"
  *   links in remark-wikilinks.ts.
  * Gotcha: because both heading ids and the wikilink "#heading" anchors call this
  *   same function, they agree by construction. If you ever swap the heading-id

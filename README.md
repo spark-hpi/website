@@ -88,7 +88,8 @@ To publish the latest content, refresh your `./content` checkout
 src/lib/load-content.ts  reads the markdown folder off disk
 src/lib/hierarchy.ts     files → the workshop → chapter → subpage tree
 src/lib/routes.ts        the ONE place a page's title, slug, and URL are decided
-src/lib/render-workshop.ts  markdown → HTML (the render pipeline)
+src/lib/rehype-markdown.ts  the remark/rehype plugins (markdown → HTML)
+astro.config.mjs         where those plugins are registered into Astro
 src/pages/               the routes (home, workshop, subpage, info, 404)
 ```
 
