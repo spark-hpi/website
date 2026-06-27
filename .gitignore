@@ -53,3 +53,6 @@ content/
 
 # playwright mcp test artifacts
 .playwright-mcp/
+
+# claude code local state
+.claude/

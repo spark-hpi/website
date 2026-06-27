@@ -1,0 +1,23 @@
+---
+/**
+ * Prose.astro — the <article> wrapper for rendered markdown.
+ *
+ * WHAT: renders the workshop/subpage HTML inside `<article class="prose ...">`
+ *   and pulls in prose.css (all the article typography).
+ * WHY: both routes used to inline an identical ~150-line copy of the prose CSS.
+ *   This component is the single home for that wrapper + its styles.
+ * PROPS: `html` — the rendered markdown string (injected via set:html).
+ *        `variant` — "workshop" (denser, chapter dividers) or "subpage".
+ * DOM contract: the `prose` class is what ProgressRuler's scroll-spy and the
+ *   link-preview script scope their queries to (`.prose h1[id]`, etc.).
+ */
+import "../styles/prose.css";
+
+interface Props {
+  html: string;
+  variant?: "workshop" | "subpage";
+}
+const { html, variant = "workshop" } = Astro.props;
+---
+
+<article class:list={["prose", variant]} set:html={html}></article>

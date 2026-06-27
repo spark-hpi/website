@@ -1,0 +1,202 @@
+/*
+ * prose.css — the typography of rendered workshop markdown.
+ *
+ * WHAT: every visual rule for the HTML that comes out of the markdown renderer
+ *   (headings, paragraphs, lists, code, tables, callouts, figures, images).
+ * WHY: both routes (workshop page + subpage) render markdown into
+ *   `<article class="prose">`. Before, each route carried its own ~150-line copy
+ *   of these rules and they drifted. This file is the single source.
+ * CONTRACT: the markdown HTML is injected via `set:html`, so these selectors are
+ *   global (not Astro-scoped) on purpose — Prose.astro imports this file.
+ *   Variants differ only in heading scale: `.prose.workshop` (denser, with the
+ *   chapter-divider rule) vs `.prose.subpage`.
+ * WHERE: imported by components/Prose.astro, which owns the <article> wrapper.
+ * GOTCHA: `h2.chapter-divider` is emitted by ChapterDivider/the renderer and is
+ *   also a structural marker read by TocRail + ProgressRuler — keep the class.
+ */
+
+.prose {
+  max-width: var(--content-w);
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+/* --- block elements shared by both variants --- */
+.prose p {
+  margin: 16px 0;
+}
+.prose .broken {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+.prose code {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: color-mix(in oklab, var(--fg) 8%, transparent);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+.prose pre {
+  background: color-mix(in oklab, var(--fg) 6%, transparent);
+  border: 1px solid var(--rule);
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  margin: 24px 0;
+}
+.prose pre code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* --- tables --- */
+.prose .table-wrap {
+  overflow-x: auto;
+  margin: 24px 0;
+}
+.prose .table-wrap table {
+  margin: 0;
+}
+.prose table {
+  border-collapse: collapse;
+  margin: 24px 0;
+  width: 100%;
+  font-size: 14px;
+}
+.prose th,
+.prose td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--rule);
+}
+.prose th {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  border-bottom-width: 2px;
+}
+
+/* --- figures & images --- */
+.prose figure.md-figure {
+  margin: 32px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.prose figure.md-figure .md-img-frame {
+  display: inline-block;
+  max-width: 100%;
+  padding: 12px;
+  border: 1px solid var(--rule);
+  background-image: var(--texture);
+  background-repeat: repeat;
+  line-height: 0;
+  box-sizing: content-box;
+}
+.prose figure.md-figure .md-img-frame img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.prose figure.md-figure figcaption {
+  font-family: var(--mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-align: center;
+  max-width: 90%;
+}
+.prose img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* --- WORKSHOP variant: denser headings, lists, and the chapter divider --- */
+.prose.workshop h1 {
+  font-family: var(--serif);
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-top: 64px;
+  margin-bottom: 20px;
+}
+.prose.workshop h2.chapter-divider {
+  font-family: var(--mono);
+  font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 80px;
+  margin-bottom: 24px;
+  color: var(--fg);
+  text-align: center;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 24px;
+  align-items: center;
+}
+.prose.workshop h2.chapter-divider::before,
+.prose.workshop h2.chapter-divider::after {
+  content: "";
+  height: 16px;
+  background-image: var(--texture);
+  background-repeat: repeat;
+}
+.prose.workshop h2:not(.chapter-divider) {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+  margin-top: 48px;
+  margin-bottom: 16px;
+}
+.prose.workshop h3 {
+  font-family: var(--serif);
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 32px;
+  margin-bottom: 12px;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+}
+.prose.workshop ul,
+.prose.workshop ol {
+  margin: 16px 0;
+  padding-left: 24px;
+}
+.prose.workshop li {
+  margin: 8px 0;
+}
+
+/* --- SUBPAGE variant: lighter heading scale --- */
+.prose.subpage h1 {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 600;
+  margin-top: 56px;
+  margin-bottom: 20px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.prose.subpage h2 {
+  font-family: var(--serif);
+  font-size: 24px;
+  font-weight: 600;
+  margin-top: 40px;
+  margin-bottom: 14px;
+}
+.prose.subpage h3 {
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 28px;
+  margin-bottom: 10px;
+}

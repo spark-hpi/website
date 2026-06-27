@@ -4,6 +4,7 @@ import BackLink from "../../components/BackLink.astro";
 import TocRail from "../../components/TocRail.astro";
 import ProgressRuler from "../../components/ProgressRuler.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
+import Prose from "../../components/Prose.astro";
 import { loadContent } from "../../lib/load-content";
 import { renderSubpage } from "../../lib/render-workshop";
 
@@ -39,7 +40,7 @@ const rendered = await renderSubpage(node, hierarchy);
     </header>
     <div class="ws-body">
       <TocRail items={rendered.toc} glossary={rendered.glossary} />
-      <article class="prose" set:html={rendered.html}></article>
+      <Prose html={rendered.html} variant="subpage" />
     </div>
   </section>
   <ProgressRuler items={rendered.toc} />
@@ -63,30 +64,4 @@ const rendered = await renderSubpage(node, hierarchy);
   @media (min-width: 1024px) {
     .ws-body { grid-template-columns: 220px minmax(0, 1fr); gap: 64px; }
   }
-  .prose { max-width: var(--content-w); overflow-wrap: break-word; min-width: 0; }
-  .prose :global(.table-wrap) { overflow-x: auto; margin: 24px 0; }
-  .prose :global(.table-wrap table) { margin: 0; }
-  .prose :global(h1) {
-    font-family: var(--serif); font-size: 32px; font-weight: 600;
-    margin-top: 56px; margin-bottom: 20px; line-height: 1.1;
-    letter-spacing: -0.01em;
-  }
-  .prose :global(h2) {
-    font-family: var(--serif); font-size: 24px; font-weight: 600;
-    margin-top: 40px; margin-bottom: 14px;
-  }
-  .prose :global(h3) {
-    font-family: var(--serif); font-size: 18px; font-weight: 600;
-    margin-top: 28px; margin-bottom: 10px;
-  }
-  .prose :global(p) { margin: 16px 0; }
-  .prose :global(.broken) { color: var(--muted); text-decoration: line-through; }
-  .prose :global(code) { font-family: var(--mono); font-size: 13px; background: color-mix(in oklab, var(--fg) 8%, transparent); padding: 1px 5px; border-radius: 2px; }
-  .prose :global(pre) { background: color-mix(in oklab, var(--fg) 6%, transparent); border: 1px solid var(--rule); padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 12.5px; line-height: 1.6; margin: 24px 0; }
-  .prose :global(pre code) { background: transparent; padding: 0; font-size: inherit; }
-  .prose :global(figure.md-figure) { margin: 32px auto; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-  .prose :global(figure.md-figure .md-img-frame) { display: inline-block; max-width: 100%; padding: 12px; border: 1px solid var(--rule); background-image: var(--texture); background-repeat: repeat; line-height: 0; box-sizing: content-box; }
-  .prose :global(figure.md-figure .md-img-frame img) { display: block; max-width: 100%; height: auto; }
-  .prose :global(figure.md-figure figcaption) { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); text-align: center; max-width: 90%; }
-  .prose :global(img) { max-width: 100%; height: auto; }
 </style>
