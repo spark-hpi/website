@@ -1,0 +1,259 @@
+---
+/**
+ * SettingsPanel.astro — the floating settings dialog shell.
+ *
+ * Responsibility: the #theme-edit-panel container, its open/close lifecycle
+ *   (edit button toggle, × button, Escape, click-outside-to-dismiss), and ALL
+ *   of the panel's styling. It composes two sections: ColorEditor and
+ *   VoxelControls. It owns no settings logic itself.
+ * Used by: SiteFooter.astro.
+ * Emits: "spark:settings-open" whenever the panel opens, so ColorEditor can
+ *   refill its inputs.
+ * DOM contract: the open/close logic looks up #theme-edit-btn (in SiteFooter)
+ *   and #clr-close (here) by id. Panel styles are is:global because the panel's
+ *   markup is split across this file + the two section components; the selectors
+ *   are all #theme-edit-panel-prefixed so they don't leak.
+ */
+import ColorEditor from "./ColorEditor.astro";
+import VoxelControls from "./VoxelControls.astro";
+---
+
+<div id="theme-edit-panel" role="dialog" aria-label="Color editor" hidden>
+  <div class="head">
+    <span class="title">Colors · <span id="clr-theme-label">light</span></span>
+    <button id="clr-close" type="button" aria-label="Close">×</button>
+  </div>
+
+  <ColorEditor />
+
+  <div class="section-divider" aria-hidden="true"></div>
+
+  <VoxelControls />
+</div>
+
+<style is:global>
+  #theme-edit-panel {
+    position: fixed;
+    left: 16px;
+    bottom: 64px;
+    z-index: 60;
+    width: 280px;
+    padding: 14px;
+    background: var(--bg);
+    color: var(--fg);
+    border: 1px solid var(--fg);
+    font-family: var(--mono);
+    font-size: 12px;
+    box-shadow: 4px 4px 0 var(--fg);
+  }
+  #theme-edit-panel[hidden] {
+    display: none;
+  }
+  #theme-edit-panel .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  #theme-edit-panel .head button {
+    background: transparent;
+    border: none;
+    color: var(--fg);
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+  #theme-edit-panel #vox-reset {
+    font-family: "Departure Mono", var(--mono);
+    font-size: 16px;
+    color: var(--muted);
+  }
+  #theme-edit-panel #vox-reset:hover {
+    color: var(--fg);
+  }
+  #theme-edit-panel .row {
+    display: grid;
+    grid-template-columns: 90px 28px 1fr;
+    gap: 8px;
+    align-items: center;
+    margin: 6px 0;
+  }
+  #theme-edit-panel label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  #theme-edit-panel input[type="color"] {
+    width: 28px;
+    height: 24px;
+    padding: 0;
+    border: 1px solid var(--rule);
+    background: transparent;
+    cursor: pointer;
+  }
+  #theme-edit-panel input[type="text"] {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--rule);
+    padding: 3px 6px;
+    width: 100%;
+  }
+  #theme-edit-panel input[type="text"]:focus {
+    outline: none;
+    border-color: var(--fg);
+  }
+  #theme-edit-panel input.invalid {
+    border-color: #c0392b;
+  }
+  #theme-edit-panel .actions {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  #theme-edit-panel #clr-reset {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--fg);
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+  #theme-edit-panel #clr-reset:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  #theme-edit-panel .hint {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  #theme-edit-panel .section-divider {
+    margin: 14px 0 10px;
+    border-top: 1px dotted var(--rule);
+  }
+  #theme-edit-panel select {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--rule);
+    padding: 3px 6px;
+    width: 100%;
+    grid-column: 2 / span 2;
+  }
+  #theme-edit-panel select:focus {
+    outline: none;
+    border-color: var(--fg);
+  }
+  #theme-edit-panel .segmented {
+    display: inline-flex;
+    grid-column: 2 / span 2;
+  }
+  #theme-edit-panel .segmented .seg {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--rule);
+    padding: 2px 8px;
+    cursor: pointer;
+  }
+  #theme-edit-panel .segmented .seg + .seg {
+    border-left: 0;
+  }
+  #theme-edit-panel .segmented .seg[aria-pressed="true"] {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  #theme-edit-panel .voxel-hint .hint {
+    grid-column: 2 / span 2;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  #theme-edit-panel .row.range {
+    grid-template-columns: 90px 1fr 40px;
+  }
+  #theme-edit-panel label.resettable {
+    cursor: pointer;
+  }
+  #theme-edit-panel label.resettable:hover {
+    color: var(--fg);
+  }
+  #theme-edit-panel input[type="range"] {
+    width: 100%;
+    accent-color: var(--fg);
+  }
+  #theme-edit-panel output {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-align: right;
+  }
+</style>
+
+<script>
+  const btn = document.getElementById("theme-edit-btn") as HTMLButtonElement;
+  const panel = document.getElementById("theme-edit-panel") as HTMLDivElement;
+  const closeBtn = document.getElementById("clr-close") as HTMLButtonElement;
+
+  function open() {
+    // Let ColorEditor refill its inputs before we reveal the panel.
+    document.dispatchEvent(new CustomEvent("spark:settings-open"));
+    panel.hidden = false;
+    btn.setAttribute("aria-expanded", "true");
+  }
+  function close() {
+    panel.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  }
+  btn.addEventListener("click", () => (panel.hidden ? open() : close()));
+  closeBtn.addEventListener("click", close);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !panel.hidden) close();
+  });
+
+  // While the panel is open, clicks outside dismiss it and don't activate
+  // whatever is underneath (e.g. a WorkshopCard link).
+  function outsidePanel(target: EventTarget | null): boolean {
+    if (!target || !(target instanceof Node)) return false;
+    return !panel.contains(target) && !btn.contains(target);
+  }
+  document.addEventListener(
+    "pointerdown",
+    (e) => {
+      if (panel.hidden) return;
+      if (!outsidePanel(e.target)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      close();
+    },
+    true,
+  );
+  document.addEventListener(
+    "click",
+    (e) => {
+      if (panel.hidden) return;
+      if (!outsidePanel(e.target)) return;
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    true,
+  );
+</script>

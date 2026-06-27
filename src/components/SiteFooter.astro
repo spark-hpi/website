@@ -1,0 +1,122 @@
+---
+/**
+ * SiteFooter.astro — the page footer bar.
+ *
+ * Responsibility: the footer strip (theme cycle button, "edit" trigger for the
+ *   settings panel, texture rule, info link) and the theme-cycle logic itself
+ *   (system → light → dark). It renders the SettingsPanel; all settings logic
+ *   lives there.
+ * Used by: every page (src/pages/*).
+ * STORAGE CONTRACT: the "spark-theme" key is shared, by literal string, with the
+ *   is:inline pre-paint script in Base.astro and read by ColorEditor — keep them
+ *   in sync. Flipping data-theme here is what ColorEditor's MutationObserver
+ *   reacts to.
+ */
+import SettingsPanel from "./settings/SettingsPanel.astro";
+---
+
+<footer>
+  <span class="brand">
+    <button
+      id="theme-toggle"
+      class="edit"
+      type="button"
+      aria-label="Toggle color theme">theme: system</button
+    >
+    <button
+      id="theme-edit-btn"
+      class="edit"
+      type="button"
+      aria-controls="theme-edit-panel"
+      aria-label="Edit colors">edit</button
+    >
+  </span>
+  <div class="center"></div>
+  <a class="info-link" href="/info">info</a>
+</footer>
+
+<SettingsPanel />
+
+<style>
+  footer {
+    max-width: 1400px;
+    margin: 96px auto 0;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  footer .center {
+    background-image: var(--texture);
+    background-repeat: repeat;
+    height: 8px;
+  }
+  footer .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  footer .edit {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--rule);
+    padding: 2px 6px;
+    cursor: pointer;
+  }
+  footer .edit:hover {
+    color: var(--fg);
+    border-color: var(--fg);
+  }
+  footer .info-link {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  footer .info-link:hover {
+    color: var(--fg);
+  }
+</style>
+
+<script>
+  // Theme cycle button: system → light → dark. Sets data-theme on <html>
+  // (which ColorEditor watches) and persists the choice.
+  const root = document.documentElement;
+  const themeOrder = ["system", "light", "dark"] as const;
+  type ThemeMode = (typeof themeOrder)[number];
+  const themeBtn = document.getElementById("theme-toggle") as HTMLButtonElement;
+
+  function readThemeMode(): ThemeMode {
+    const v = localStorage.getItem("spark-theme");
+    return (themeOrder as readonly string[]).includes(v ?? "")
+      ? (v as ThemeMode)
+      : "system";
+  }
+  function applyThemeMode(m: ThemeMode) {
+    if (m === "system") root.removeAttribute("data-theme");
+    else root.setAttribute("data-theme", m);
+    themeBtn.textContent = `theme: ${m}`;
+    try {
+      localStorage.setItem("spark-theme", m);
+    } catch {}
+  }
+  let currentMode = readThemeMode();
+  applyThemeMode(currentMode);
+  themeBtn.addEventListener("click", () => {
+    currentMode =
+      themeOrder[(themeOrder.indexOf(currentMode) + 1) % themeOrder.length];
+    applyThemeMode(currentMode);
+  });
+</script>

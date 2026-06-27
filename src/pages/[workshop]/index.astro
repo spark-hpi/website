@@ -4,7 +4,7 @@ import BackLink from "../../components/BackLink.astro";
 import WorkshopHero from "../../components/WorkshopHero.astro";
 import TocRail from "../../components/TocRail.astro";
 import ProgressRuler from "../../components/ProgressRuler.astro";
-import Footer from "../../components/Footer.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
 import { loadContent } from "../../lib/load-content";
 import { renderWorkshop } from "../../lib/render-workshop";
 
@@ -40,7 +40,7 @@ const rendered = await renderWorkshop(workshop, hierarchy);
     </div>
   </section>
   <ProgressRuler items={rendered.toc} />
-  <Footer />
+  <SiteFooter />
 </Base>
 
 <style>

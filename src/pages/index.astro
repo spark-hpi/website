@@ -1,7 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import WorkshopCard from "../components/WorkshopCard.astro";
-import Footer from "../components/Footer.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 import VoxelStar from "../components/VoxelStar.astro";
 import { loadContent } from "../lib/load-content";
 
@@ -39,7 +39,7 @@ const cards = hierarchy.workshops.map((w) => {
       {cards.map((c) => <WorkshopCard {...c} />)}
     </div>
   </section>
-  <Footer />
+  <SiteFooter />
 </Base>
 
 <style>

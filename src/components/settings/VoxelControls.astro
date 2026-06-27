@@ -1,0 +1,229 @@
+---
+/**
+ * VoxelControls.astro — the voxel-star section of the settings panel.
+ *
+ * Responsibility: the UI (mode/idle/edge selects, on-off toggle, range
+ *   sliders) for the homepage voxel hero, wired to voxel/settings.ts. Editing a
+ *   control saves to localStorage and dispatches the voxel SETTINGS_EVENT so the
+ *   running Three.js scene updates live.
+ * Used by: settings/SettingsPanel.astro (rendered inside the shared dialog).
+ * DOM contract: lives inside #theme-edit-panel; its styles are defined there
+ *   (is:global). Reads/writes via voxel/settings.ts only.
+ */
+---
+
+<div class="head">
+  <span class="title">Voxel star</span>
+  <button id="vox-reset" type="button" aria-label="Reset voxel settings"
+    >↰</button
+  >
+</div>
+
+<div class="row">
+  <label>Effects</label>
+  <div class="segmented" role="group" aria-label="Voxel effects toggle">
+    <button type="button" data-voxel-enable="on" class="seg">on</button>
+    <button type="button" data-voxel-enable="off" class="seg">off</button>
+  </div>
+</div>
+
+<div class="row">
+  <label for="vox-mode">Mode</label>
+  <select id="vox-mode" data-voxel="mode">
+    <option value="explode">Explode</option>
+    <option value="repel">Repel</option>
+    <option value="magnet">Magnet</option>
+    <option value="tilt">Tilt</option>
+    <option value="gravity">Gravity</option>
+  </select>
+</div>
+
+<div class="row">
+  <label for="vox-idle">Idle</label>
+  <select id="vox-idle" data-voxel="idle">
+    <option value="still">Still</option>
+    <option value="breathe">Breathe</option>
+  </select>
+</div>
+
+<div class="row">
+  <label for="vox-edge">Edge</label>
+  <select id="vox-edge" data-voxel="edge">
+    <option value="blocky">Blocky</option>
+    <option value="carved">Carved</option>
+  </select>
+</div>
+
+<div class="row range">
+  <label for="vox-resolution">Voxels</label>
+  <input id="vox-resolution" data-voxel-num="resolution" type="range" />
+  <output id="vox-resolution-out"></output>
+</div>
+<div class="row range">
+  <label for="vox-stiffness">Stiffness</label>
+  <input id="vox-stiffness" data-voxel-num="stiffness" type="range" />
+  <output id="vox-stiffness-out"></output>
+</div>
+<div class="row range">
+  <label for="vox-damping">Damping</label>
+  <input id="vox-damping" data-voxel-num="damping" type="range" />
+  <output id="vox-damping-out"></output>
+</div>
+<div class="row range">
+  <label for="vox-mass">Mass</label>
+  <input id="vox-mass" data-voxel-num="mass" type="range" />
+  <output id="vox-mass-out"></output>
+</div>
+<div class="row range">
+  <label for="vox-strength">Strength</label>
+  <input id="vox-strength" data-voxel-num="strength" type="range" />
+  <output id="vox-strength-out"></output>
+</div>
+<div class="row range">
+  <label for="vox-gravity">Gravity</label>
+  <input id="vox-gravity" data-voxel-num="gravity" type="range" />
+  <output id="vox-gravity-out"></output>
+</div>
+
+<script>
+  import {
+    type VoxelSettings,
+    DEFAULTS as VOX_DEFAULTS,
+    SETTINGS_EVENT as VOX_EVENT,
+    RANGES as VOX_RANGES,
+    load as voxLoad,
+    save as voxSave,
+    clear as voxClear,
+  } from "../voxel/settings";
+
+  type VoxNumKey = keyof typeof VOX_RANGES;
+
+  const voxMode = document.getElementById(
+    "vox-mode",
+  ) as HTMLSelectElement | null;
+  const voxIdle = document.getElementById(
+    "vox-idle",
+  ) as HTMLSelectElement | null;
+  const voxEdge = document.getElementById(
+    "vox-edge",
+  ) as HTMLSelectElement | null;
+  const voxResetBtn = document.getElementById(
+    "vox-reset",
+  ) as HTMLButtonElement | null;
+  const voxEnableBtns = document.querySelectorAll<HTMLButtonElement>(
+    "[data-voxel-enable]",
+  );
+
+  if (voxMode && voxIdle && voxEdge) {
+    let state: VoxelSettings = voxLoad();
+
+    function reflect() {
+      voxMode!.value = state.mode;
+      voxIdle!.value = state.idle;
+      voxEdge!.value = state.edge;
+      for (const b of voxEnableBtns) {
+        b.setAttribute(
+          "aria-pressed",
+          (b.dataset.voxelEnable === (state.enabled ? "on" : "off")).toString(),
+        );
+      }
+      for (const key of Object.keys(VOX_RANGES) as VoxNumKey[]) {
+        const input = document.getElementById(
+          `vox-${key}`,
+        ) as HTMLInputElement | null;
+        const out = document.getElementById(
+          `vox-${key}-out`,
+        ) as HTMLOutputElement | null;
+        if (!input || !out) continue;
+        const r = VOX_RANGES[key];
+        input.min = String(r.min);
+        input.max = String(r.max);
+        input.step = String(r.step);
+        input.value = String(state[key]);
+        out.value = formatNum(state[key], r.step);
+      }
+    }
+
+    function formatNum(n: number, step: number): string {
+      return step >= 1 ? String(Math.round(n)) : n.toFixed(step >= 0.1 ? 1 : 2);
+    }
+
+    function commit(next: Partial<VoxelSettings>) {
+      state = { ...state, ...next };
+      voxSave(state);
+      reflect();
+      document.dispatchEvent(new CustomEvent(VOX_EVENT, { detail: state }));
+    }
+
+    voxMode.addEventListener("change", () =>
+      commit({ mode: voxMode.value as VoxelSettings["mode"] }),
+    );
+    voxIdle.addEventListener("change", () =>
+      commit({ idle: voxIdle.value as VoxelSettings["idle"] }),
+    );
+    voxEdge.addEventListener("change", () =>
+      commit({ edge: voxEdge.value as VoxelSettings["edge"] }),
+    );
+    for (const b of voxEnableBtns) {
+      b.addEventListener("click", () =>
+        commit({ enabled: b.dataset.voxelEnable === "on" }),
+      );
+    }
+
+    if (voxResetBtn) {
+      voxResetBtn.addEventListener("click", () => {
+        voxClear();
+        state = { ...VOX_DEFAULTS };
+        if (matchMedia("(hover: none) and (pointer: coarse)").matches)
+          state.mode = "explode";
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches)
+          state.idle = "still";
+        voxSave(state);
+        reflect();
+        document.dispatchEvent(new CustomEvent(VOX_EVENT, { detail: state }));
+      });
+    }
+
+    for (const key of Object.keys(VOX_RANGES) as VoxNumKey[]) {
+      const input = document.getElementById(
+        `vox-${key}`,
+      ) as HTMLInputElement | null;
+      if (!input) continue;
+      input.addEventListener("input", () => {
+        const v = Number(input.value);
+        if (!isFinite(v)) return;
+        commit({ [key]: v } as Partial<VoxelSettings>);
+      });
+      const label = document.querySelector<HTMLLabelElement>(
+        `label[for="vox-${key}"]`,
+      );
+      if (label) {
+        label.classList.add("resettable");
+        label.title = "Click to reset";
+        label.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          commit({ [key]: VOX_RANGES[key].default } as Partial<VoxelSettings>);
+        });
+      }
+    }
+
+    // Touch-only detection: filter Mode to Explode only.
+    const touchOnly = matchMedia("(hover: none) and (pointer: coarse)").matches;
+    if (touchOnly) {
+      voxMode.querySelectorAll("option").forEach((o) => {
+        if (o.value !== "explode") o.remove();
+      });
+      if (state.mode !== "explode") commit({ mode: "explode" });
+    }
+
+    // Reduced-motion: pin idle to Still on first load unless user has saved otherwise.
+    const reducedMotion = matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (reducedMotion && !localStorage.getItem("spark-voxel-settings")) {
+      commit({ idle: "still" });
+    }
+
+    reflect();
+  }
+</script>
