@@ -18,9 +18,9 @@ describe("settings", () => {
 
   it("DEFAULTS has the expected shape", () => {
     expect(DEFAULTS.enabled).toBe(true);
-    expect(DEFAULTS.mode).toBe("magnet");
+    expect(DEFAULTS.mode).toBe("repel");
     expect(DEFAULTS.variant).toBe("solid");
-    expect(DEFAULTS.idle).toBe("breathe");
+    expect(DEFAULTS.idle).toBe("still");
   });
 
   it("load returns DEFAULTS when storage is empty", () => {
