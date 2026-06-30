@@ -1,0 +1,145 @@
+---
+// 3D Spox hero. Rendered by [subpage].astro when frontmatter has `hero: spox`.
+// The Three.js code loads lazily on capable devices; otherwise this stays hidden.
+---
+
+<section class="spox-hero" data-spox-hero aria-hidden="true">
+  <div class="spox-hero__stage">
+    <canvas class="spox-canvas"></canvas>
+    <div class="spox-hotspots">
+      <div class="spox-hotspot" data-anchor="10">
+        <button class="spox-hotspot__label" type="button">BME680</button>
+        <p class="spox-hotspot__panel">
+          Environment sensor: temperature, humidity, barometric pressure and
+          air quality (VOCs).
+        </p>
+      </div>
+      <div class="spox-hotspot" data-anchor="1">
+        <button class="spox-hotspot__label" type="button">OLED</button>
+        <p class="spox-hotspot__panel">
+          Small display, shows the live readouts on the box at a glance.
+        </p>
+      </div>
+      <div class="spox-hotspot" data-anchor="2">
+        <button class="spox-hotspot__label" type="button">LD2450</button>
+        <p class="spox-hotspot__panel">
+          mmWave presence radar, tracks up to 3 people across the room.
+        </p>
+      </div>
+    </div>
+    <p class="spox-hero__hint">Scroll to take it apart ↓</p>
+  </div>
+</section>
+
+<style>
+  /* shown only after the script boots it */
+  .spox-hero {
+    display: none;
+    margin: 0;
+  }
+  .spox-hero[data-ready] {
+    display: block;
+    height: 200vh; /* scroll room for the explosion */
+  }
+  .spox-hero__stage {
+    position: sticky;
+    top: 0;
+    height: 80vh; /* shorter stage, less empty space */
+    overflow: hidden;
+  }
+  .spox-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .spox-hotspots {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .spox-hotspot {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    will-change: left, top, opacity;
+  }
+  .spox-hotspot__label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 4px 11px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .spox-hotspot__panel {
+    display: none;
+    margin: 6px auto 0;
+    max-width: 220px;
+    font-family: var(--serif);
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 8px 11px;
+  }
+  .spox-hotspot.open .spox-hotspot__panel {
+    display: block;
+  }
+  .spox-hero__hint {
+    position: absolute;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    pointer-events: none;
+  }
+</style>
+
+<script>
+  import { init } from "./spox/index";
+
+  const host = document.querySelector<HTMLElement>("[data-spox-hero]");
+
+  // toggle a hotspot panel on click
+  host?.querySelectorAll<HTMLElement>(".spox-hotspot__label").forEach((b) =>
+    b.addEventListener("click", () =>
+      b.parentElement?.classList.toggle("open"),
+    ),
+  );
+
+  function boot() {
+    if (!host) return;
+    const canvas = host.querySelector<HTMLCanvasElement>("canvas.spox-canvas");
+    if (!canvas) return;
+
+    // skip on reduced-motion and small screens
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (matchMedia("(max-width: 700px)").matches) return;
+    try {
+      if (!(canvas.getContext("webgl2") || canvas.getContext("webgl"))) return;
+    } catch {
+      return;
+    }
+
+    const handle = init(canvas, { modelUrl: "/models/spox.glb" });
+    window.addEventListener("pagehide", () => handle.dispose(), { once: true });
+  }
+
+  if ("requestIdleCallback" in window) {
+    (window as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(boot);
+  } else {
+    setTimeout(boot, 200);
+  }
+</script>

@@ -5,6 +5,7 @@ import TocRail from "../../components/TocRail.astro";
 import ScrollSpy from "../../components/ScrollSpy.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
 import Prose from "../../components/Prose.astro";
+import SpoxHero from "../../components/SpoxHero.astro";
 import { getCollection, render } from "astro:content";
 import { loadContent } from "../../lib/load-content";
 import { headingsToToc } from "../../lib/toc";
@@ -39,6 +40,9 @@ const entries = await getCollection("docs");
 const entry = entries.find((e) => e.id === node.filename)!;
 const { Content, headings } = await render(entry);
 
+// optional per-page hero (frontmatter: hero: spox)
+const hero = (entry.data as { hero?: string }).hero;
+
 // TOC: this page's headings + any wiki-linked pages it references (glossary split).
 const linked = collectLinkedPages(
   [node.rawContent],
@@ -52,10 +56,11 @@ const toc = integrateLinkedIntoToc(headingsToToc(headings), regular);
 <Base title={`${subTitle} — ${workshopTitle} — Spark`}>
   <section class="ws-page">
     <BackLink href={root.url} label={workshopTitle} />
-    <header class="sub-hero">
+    <header class:list={["sub-hero", hero === "spox" && "sub-hero--flush"]}>
       <p class="crumb">{workshopTitle} / {subTitle}</p>
       <h1>{subTitle}</h1>
     </header>
+    {hero === "spox" && <SpoxHero />}
     <div class="ws-body">
       <TocRail items={toc} glossary={glossary} />
       <Prose variant="subpage"><Content /></Prose>
@@ -69,6 +74,8 @@ const toc = integrateLinkedIntoToc(headingsToToc(headings), regular);
   .ws-page { max-width: 1400px; margin: 0 auto; padding: 16px; }
   @media (min-width: 640px) { .ws-page { padding: 32px; } }
   .sub-hero { padding: 64px 0; border-bottom: 1px solid var(--rule); }
+  /* hero pages drop the rule */
+  .sub-hero--flush { border-bottom: none; padding-bottom: 8px; }
   .sub-hero .crumb {
     font-family: var(--mono); font-size: 11px; text-transform: uppercase;
     letter-spacing: 0.06em; color: var(--muted); margin: 0 0 12px;
