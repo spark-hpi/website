@@ -16,8 +16,17 @@ jobs:
     steps:
       - name: Checkout your repository using git
         uses: actions/checkout@v7
+          
+      - name: Checkout content repository using git
+        uses: actions/checkout@v7
+        with:
+          repository: "spark-hpi/docs"
+          path: content/
+        
       - name: Install, build, and upload your site
         uses: withastro/action@v6
+        env:
+          CONTENT_PATH: content/res
   
   deploy:
     needs: build
