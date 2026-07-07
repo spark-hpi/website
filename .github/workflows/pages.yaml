@@ -22,6 +22,7 @@ jobs:
         with:
           repository: "spark-hpi/docs"
           path: content/
+          lfs: true
         
       - name: Install, build, and upload your site
         uses: withastro/action@v6
