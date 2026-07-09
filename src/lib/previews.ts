@@ -2,15 +2,17 @@
  * previews.ts — build the hover-card preview map at build time.
  *
  * WHAT: `buildPreviewMap(hierarchy)` walks every workshop/chapter/subpage/heading
- *   and registers an internal Preview entry for each, then fetches OpenGraph
- *   metadata for every external https? link found in the content. Returns a
- *   PreviewMap keyed by the same lookup strings rehype-link-preview-keys.ts
+ *   and registers an internal Preview entry for each, plus a Preview for every
+ *   external https? link found in the content (read from the committed cache).
+ *   Returns a PreviewMap keyed by the same lookup strings rehype-link-preview-keys.ts
  *   stamps onto <a data-preview-key> (external → full URL, internal → absolute
  *   path, same-page → `<pageBase>#anchor`). Base.astro serializes the map into a
  *   <script type="application/json"> tag the hover script reads.
- * WHY a committed cache: external OG fetches are slow and rate-limited, so results
- *   are persisted to src/data/link-previews.json and reused across builds; failed
- *   fetches are remembered for 7 days. `npm run refresh-link-previews` wipes it.
+ * WHY a committed cache: external OG fetches are slow and rate-limited, so
+ *   `buildPreviewMap` never hits the network — it only reads src/data/link-previews.json.
+ *   Run `npm run generate-link-previews` (scripts/generate-link-previews.ts) to fetch
+ *   OpenGraph metadata for new/stale URLs and update the cache; `npm run
+ *   refresh-link-previews` wipes it first so every URL is re-fetched.
  * GOTCHA: heading-anchor keys are slugify()'d — same slugger as the DOM ids, so
  *   `<pageBase>#anchor` keys line up with real heading ids by construction.
  */
@@ -59,12 +61,21 @@ const FETCH_TIMEOUT_MS = 8000;
 
 let memo: Promise<PreviewMap> | null = null;
 
+/** Cache-only: never touches the network. Used by Base.astro on every build/render. */
 export function buildPreviewMap(hierarchy: Hierarchy): Promise<PreviewMap> {
-  if (!memo) memo = doBuild(hierarchy);
+  if (!memo) memo = doBuild(hierarchy, { fetch: false });
   return memo;
 }
 
-async function doBuild(hierarchy: Hierarchy): Promise<PreviewMap> {
+/** Fetches OpenGraph metadata for new/stale URLs and updates the committed cache. */
+export function generateLinkPreviews(hierarchy: Hierarchy): Promise<PreviewMap> {
+  return doBuild(hierarchy, { fetch: true });
+}
+
+async function doBuild(
+  hierarchy: Hierarchy,
+  opts: { fetch: boolean },
+): Promise<PreviewMap> {
   const out: PreviewMap = {};
   const externalUrls = new Set<string>();
 
@@ -133,35 +144,37 @@ async function doBuild(hierarchy: Hierarchy): Promise<PreviewMap> {
   const now = Date.now();
   let dirty = false;
 
-  for (const url of externalUrls) {
-    const entry = cache[url];
-    const stale =
-      entry?.failed && now - (entry.fetchedAt ?? 0) > STALE_FAILED_MS;
-    if (!entry || stale) {
-      try {
-        const fetched = await fetchOg(url);
-        if (fetched.title || fetched.description || fetched.image) {
-          cache[url] = { ...fetched, fetchedAt: now };
-        } else {
-          cache[url] = { failed: true, fetchedAt: now };
-        }
-        dirty = true;
-      } catch (err: any) {
-        const name = err?.name ?? "";
-        const msg = err?.message ?? "";
-        const networkError =
-          name === "AbortError" ||
-          name === "TypeError" ||
-          /fetch failed|ENOTFOUND|ECONNREFUSED|EAI_AGAIN/i.test(msg);
-        if (!networkError) {
-          cache[url] = { failed: true, fetchedAt: now };
+  if (opts.fetch) {
+    for (const url of externalUrls) {
+      const entry = cache[url];
+      const stale =
+        entry?.failed && now - (entry.fetchedAt ?? 0) > STALE_FAILED_MS;
+      if (!entry || stale) {
+        try {
+          const fetched = await fetchOg(url);
+          if (fetched.title || fetched.description || fetched.image) {
+            cache[url] = { ...fetched, fetchedAt: now };
+          } else {
+            cache[url] = { failed: true, fetchedAt: now };
+          }
           dirty = true;
+        } catch (err: any) {
+          const name = err?.name ?? "";
+          const msg = err?.message ?? "";
+          const networkError =
+            name === "AbortError" ||
+            name === "TypeError" ||
+            /fetch failed|ENOTFOUND|ECONNREFUSED|EAI_AGAIN/i.test(msg);
+          if (!networkError) {
+            cache[url] = { failed: true, fetchedAt: now };
+            dirty = true;
+          }
         }
       }
     }
-  }
 
-  if (dirty) saveCache(cache);
+    if (dirty) saveCache(cache);
+  }
 
   for (const url of externalUrls) {
     const e = cache[url];
