@@ -86,7 +86,7 @@ export const remarkWikilinks: Plugin<[{ resolver: WikiResolver }], Root> = (
           }
           out.push({
             type: "image",
-            url: `images/${trimmedName}`,
+            url: trimmedName,
             alt: caption ?? trimmedName,
             title: width ?? null,
           } as any);
