@@ -10,8 +10,10 @@
  * the result into <script type="application/json" id="link-previews">; an inline
  * script wires hover popovers to any <a data-preview-key> (keys from
  * rehype-link-preview-keys.ts, map from previews.ts).
- * GOTCHA: the first page of a cold build takes ~50s — that's buildPreviewMap
- * fetching external OpenGraph metadata, not a hang. It's memoized + disk-cached.
+ * GOTCHA: buildPreviewMap only reads the committed src/data/link-previews.json
+ * cache — it never fetches over the network, so dev/build startup isn't blocked
+ * on OpenGraph requests. Run `npm run generate-link-previews` to populate/refresh
+ * the cache for new or stale external links.
  */
 import "../styles/global.css";
 import { loadContent } from "../lib/load-content";
