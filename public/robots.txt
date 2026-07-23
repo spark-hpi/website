@@ -50,21 +50,13 @@ Allow: /
 # AI training
 
 User-agent: GPTBot
-Disallow: /
-
 User-agent: ClaudeBot
-Disallow: /
-
 User-agent: anthropic-ai
-Disallow: /
-
 User-agent: CCBot
-Disallow: /
-
 User-agent: Meta-ExternalAgent
+User-agent: Bytespider
+Allow: /$
 Disallow: /
 
-User-agent: Bytespider
-Disallow: /
 
 Sitemap: https://spark-hpi.de/sitemap.xml
