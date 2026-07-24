@@ -15,7 +15,7 @@ const minutes = Math.max(1, Math.round(wordCount / 230));
   <div class="ws-cover">
     {
       cover ? (
-        <img src={cover} alt="" loading="lazy" decoding="async" />
+        <img src={cover} alt={title} loading="lazy" decoding="async" />
       ) : (
         <span class="placeholder">cover · 4:3</span>
       )
