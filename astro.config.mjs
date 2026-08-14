@@ -2,6 +2,7 @@
 import { defineConfig } from "astro/config";
 import "dotenv/config";
 import rehypeHighlight from "rehype-highlight";
+import { unified } from "@astrojs/markdown-remark";
 import { copyImages } from "./src/lib/copy-images.ts";
 import { loadContent } from "./src/lib/load-content.ts";
 import {
@@ -29,6 +30,8 @@ import { rehypeLinkPreviewKeys } from "./src/lib/rehype-link-preview-keys.ts";
  *     at config eval; restart `astro dev` after adding/renaming pages.
  *
  * markdown settings worth knowing:
+ *  - remark/rehype plugins go through markdown.processor: unified({...}) since
+ *    markdown.remarkPlugins/rehypePlugins are deprecated in Astro 6.
  *  - smartypants: false  — keep straight quotes/dashes (matches the old pipeline).
  *  - syntaxHighlight: false + rehypeHighlight — we keep highlight.js (`.hljs`
  *    spans) so the copy button (`pre > code.hljs`) and theme CSS keep working.
@@ -58,15 +61,17 @@ function resolvePageBase(filePath) {
 export default defineConfig({
   site: "https://spark-hpi.de",
   markdown: {
-    smartypants: false,
     syntaxHighlight: false,
-    remarkPlugins: [remarkCallouts, [remarkWikilinks, { resolver }]],
-    rehypePlugins: [
-      rehypeHeadingIds,
-      rehypeWrapTables,
-      rehypeImagePaths,
-      [rehypeLinkPreviewKeys, { resolvePageBase }],
-      [rehypeHighlight, { detect: true }],
-    ],
+    processor: unified({
+      smartypants: false,
+      remarkPlugins: [remarkCallouts, [remarkWikilinks, { resolver }]],
+      rehypePlugins: [
+        rehypeHeadingIds,
+        rehypeWrapTables,
+        rehypeImagePaths,
+        [rehypeLinkPreviewKeys, { resolvePageBase }],
+        [rehypeHighlight, { detect: true }],
+      ],
+    }),
   },
 });
