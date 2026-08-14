@@ -56,6 +56,7 @@ function resolvePageBase(filePath) {
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://spark-hpi.de",
   markdown: {
     smartypants: false,
     syntaxHighlight: false,
