@@ -43,10 +43,13 @@ website/
 docs/
 
 # Tooling
-bun.lock
+package-lock.json
 
 # build output — populated by copy-images.ts from CONTENT_PATH at build time
 public/images/
+
+# local symlink to the sibling docs checkout (see README Setup)
+public/res
 
 # workshop content — checkout of github.com/spark-hpi/docs (see .env.example)
 content/

@@ -5,20 +5,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```sh
-npm run dev          # astro dev — http://localhost:4321
-npm run build        # static build into dist/
-npm run preview      # serve the built site
-npm run sync-content # git pull (or clone) the workshop content into ./content
-npm run deploy       # sync-content + build + wrangler pages deploy (Cloudflare Pages, project "spark")
-npm test             # vitest run --passWithNoTests
-npm run test:watch   # vitest in watch mode
-npx vitest run path/to/file.test.ts                  # single test file
-npx vitest run -t "pattern"                          # filter by test name
-npm run generate-link-previews                        # fetch OG metadata for new/stale external links, update src/data/link-previews.json
-npm run refresh-link-previews                         # wipe src/data/link-previews.json, then regenerate it from scratch
+bun run dev          # astro dev — http://localhost:4321
+bun run build        # static build into dist/
+bun run preview      # serve the built site
+bun run sync         # git pull (or clone) the workshop content into ../docs
+bun run deploy       # sync + build + wrangler pages deploy (Cloudflare Pages, project "spark")
+bun test             # vitest run --passWithNoTests
+bun run test:watch   # vitest in watch mode
+bunx vitest run path/to/file.test.ts                  # single test file
+bunx vitest run -t "pattern"                          # filter by test name
+bun run generate-link-previews                        # fetch OG metadata for new/stale external links, update src/data/link-previews.json
+bun run refresh-link-previews                         # wipe src/data/link-previews.json, then regenerate it from scratch
 ```
 
-Requires Node ≥ 22.12 and a `.env` with `CONTENT_PATH` pointing at the workshop Markdown folder. The canonical content is the separate repo **github.com/spark-hpi/docs**; `npm run sync-content` clones/pulls it into `./content` (gitignored), and `.env` sets `CONTENT_PATH=./content/res`. Without `CONTENT_PATH`, `loadContent()` throws and the site cannot build.
+Requires Node ≥ 22.12 and a `.env` with `CONTENT_PATH` pointing at the workshop Markdown folder. The canonical content is the separate repo **github.com/spark-hpi/docs**; `bun run sync` clones/pulls it into `../docs` (sibling checkout), and `public/res` is a symlink to `../docs/res` (see README's Setup section). `.env` sets `CONTENT_PATH=./content/res`. Without `CONTENT_PATH`, `loadContent()` throws and the site cannot build.
 
 ## Architecture
 
@@ -47,7 +47,7 @@ Pipeline order (after Astro's parse + GFM):
 
 ### Link previews (hover popovers)
 
-`src/lib/previews.ts` exports two entry points. `buildPreviewMap` (memoized) runs at build time inside `Base.astro`: it walks every node to register internal preview entries (workshop / chapter / subpage / heading-anchored) and reads external-link metadata from the committed cache — it never touches the network, so `astro dev`/`astro build` startup isn't blocked on OpenGraph fetches. `generateLinkPreviews` does the actual fetching: it's invoked by `scripts/generate-link-previews.ts` (`npm run generate-link-previews`), which walks the same hierarchy, fetches OpenGraph metadata for any external `https?://` link not already cached (or whose cached failure is stale), and writes `src/data/link-previews.json`. Failed fetches are remembered for 7 days. `npm run refresh-link-previews` wipes the cache and re-runs the generator.
+`src/lib/previews.ts` exports two entry points. `buildPreviewMap` (memoized) runs at build time inside `Base.astro`: it walks every node to register internal preview entries (workshop / chapter / subpage / heading-anchored) and reads external-link metadata from the committed cache — it never touches the network, so `astro dev`/`astro build` startup isn't blocked on OpenGraph fetches. `generateLinkPreviews` does the actual fetching: it's invoked by `scripts/generate-link-previews.ts` (`bun run generate-link-previews`), which walks the same hierarchy, fetches OpenGraph metadata for any external `https?://` link not already cached (or whose cached failure is stale), and writes `src/data/link-previews.json`. Failed fetches are remembered for 7 days. `bun run refresh-link-previews` wipes the cache and re-runs the generator.
 
 The preview map is serialized into a `<script type="application/json" id="link-previews">` tag in `Base.astro`; an inline script wires hover behavior. Anchor keys come from `rehype-link-preview-keys.ts`, which adds `data-preview-key` attributes during rendering.
 

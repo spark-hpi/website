@@ -18,16 +18,13 @@
  *   This collection is purely the render provider. The fs scan and the glob read
  *   the same files; that duplication is intentional and bounded.
  */
-import "dotenv/config";
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
-
-const CONTENT_PATH = process.env.CONTENT_PATH ?? "./content/res";
 
 const docs = defineCollection({
   loader: glob({
     pattern: "**/*.md",
-    base: CONTENT_PATH,
+    base: "./public/res",
     // id === path relative to base, e.g. "How to Home Server/Proxmox.md".
     // Keep it equal to hierarchy Node.filename so routes can map between them.
     generateId: ({ entry }) => entry,

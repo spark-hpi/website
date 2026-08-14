@@ -13,15 +13,13 @@ a static Astro site.
 ## Setup
 
 ```sh
-npm install
-git clone https://github.com/spark-hpi/docs.git content   # content/ is gitignored
-cp .env.example .env
-# set CONTENT_PATH=./content/res in .env
-npm run dev
+bun install
+git clone https://github.com/spark-hpi/docs.git ../docs
+ln -s ../../docs/res ./public/res
+bun run dev
 ```
 
-`CONTENT_PATH` points at the folder of workshops (here `./content/res`). Any
-folder with this structure works — it does not have to be the docs repo:
+The `public/res` folder is a symlink to the `res/` folder in the docs repo. To update the docs just pull the latest changes from the docs repo.
 
 ```
 <CONTENT_PATH>/
@@ -72,15 +70,15 @@ workshop whose name matches their enclosing folder.
 ## Commands
 
 ```sh
-npm run dev       # dev server at http://localhost:4321 with hot reload
-npm run build     # static build into dist/
-npm run preview   # preview the built site locally
-npm run deploy    # build + deploy to Cloudflare Pages (project "spark")
-npm test          # vitest
+bun run dev       # dev server at http://localhost:4321 with hot reload
+bun run build     # static build into dist/
+bun run preview   # preview the built site locally
+bun run deploy    # build + deploy to Cloudflare Pages (project "spark")
+bun test          # vitest
 ```
 
-To publish the latest content, refresh your `./content` checkout
-(`git -C content pull`) and run `npm run deploy`.
+To publish the latest content, pull the latest changes in `../docs`
+(`git -C ../docs pull`) and run `bun run deploy`.
 
 ## Where to look in the code
 
