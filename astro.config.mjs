@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from "astro/config";
+import sitemap from "@astrojs/sitemap";
 import "dotenv/config";
 import rehypeHighlight from "rehype-highlight";
 import { unified } from "@astrojs/markdown-remark";
@@ -60,6 +61,7 @@ function resolvePageBase(filePath) {
 // https://astro.build/config
 export default defineConfig({
   site: "https://spark-hpi.de",
+  integrations: [sitemap()],
   markdown: {
     syntaxHighlight: false,
     processor: unified({
