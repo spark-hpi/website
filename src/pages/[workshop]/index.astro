@@ -95,7 +95,10 @@ const wordCount = [workshop, ...workshop.children].reduce(
             const Body = ch.Content;
             return (
               <>
-                <ChapterDivider title={ch.node.displayTitle} id={ch.node.slug} />
+                <ChapterDivider
+                  title={ch.node.displayTitle}
+                  id={ch.node.slug}
+                />
                 <Body />
               </>
             );
