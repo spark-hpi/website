@@ -36,12 +36,12 @@ const docs = defineCollection({
   schema: z
     .object({
       title: z.string().optional(),
-      description: z.string().optional(),
-      order: z.number().optional(),
-      cover: z.string().optional(),
-      authors: z.array(z.string()).optional(),
+      summary: z.string().optional(),
       date: z.union([z.string(), z.date()]).optional(),
-      up: z.any().optional(),
+      order: z.number().optional(),
+      authors: z.array(z.string()).optional(),
+      parent: z.string().optional().optional(),
+      tags: z.array(z.string()).optional(),
     })
     .passthrough(),
 });

@@ -21,16 +21,19 @@ bun run dev
 
 The `public/res` folder is a symlink to the `res/` folder in the docs repo. To update the docs just pull the latest changes from the docs repo.
 
-```
-<CONTENT_PATH>/
-  01 Workshop Name.md               # workshop root
-  01 Workshop Name/                 # optional child-page directory
-    01 Intro.md                     # child pages; need `up: "[[01 Workshop Name]]"`
-    02 Setup.md
-    images/                         # images referenced by this workshop's pages
-      cover.png
-      diagram.svg
-  02 Another Workshop.md
+```text
+public
+└── res
+    ├── [workshop-name]
+    │   ├─ INDEX.md                     # Workshop entry point with frontmatter metadata: title, summary, date, order, authors, parent (link workshop for more info), tags
+    │   ├─ media/                       # Workshop-specific media assets
+    │   │   ├── cover.png               # Workshop cover image
+    │   │   └── [other_media.jpeg]      # Additional images, videos, etc.
+    │   ├── 01-workshop-module.md       # Numbered module files (sequential order)
+    │   └── [XX-workshop-module.md]
+    │
+    └── shared                          # Reusable modules across workshops
+        └── [module.md]
 ```
 
 Child pages without an explicit `up:` in frontmatter are auto-parented to the
@@ -53,17 +56,17 @@ workshop whose name matches their enclosing folder.
   > Body text.
   ```
 
-- **Frontmatter** (all fields optional):
+- **Frontmatter** For INDEX.md:
 
   ```yaml
   ---
   title: Workshop Name
-  description: One-line homepage tagline
-  order: 2                       # controls homepage order
-  cover: images/my-workshop/cover.png
-  authors: [Vadim, Lina]
+  summary: One-line homepage tagline
   date: 2026-04-12
-  up: "[[Parent Workshop]]"      # child pages only
+  order: 2 # controls homepage order
+  authors: [Vadim, Lina]
+  parent: # optional
+  tags: [hardware]
   ---
   ```
 
