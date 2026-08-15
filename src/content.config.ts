@@ -35,13 +35,13 @@ const docs = defineCollection({
   // (e.g. `up:` is sometimes a string, sometimes a list, sometimes has a null
   // entry). passthrough() keeps anything we don't name.
   schema: z.object({
-    title: z.string(),
-    summary: z.string(),
-    date: z.union([z.string(), z.date()]),
+    title: z.string().optional(),
+    summary: z.string().optional(),
+    date: z.union([z.string(), z.date()]).optional(),
     order: z.number().optional(),
     authors: z.array(z.string()).optional(),
     parent: z.string().optional().optional(),
-    tags: z.array(z.string()),
+    tags: z.array(z.string()).optional(),
   }),
 });
 
