@@ -18,7 +18,8 @@
  *   This collection is purely the render provider. The fs scan and the glob read
  *   the same files; that duplication is intentional and bounded.
  */
-import { defineCollection, z } from "astro:content";
+import { defineCollection } from "astro:content";
+import { z } from "astro/zod";
 import { glob } from "astro/loaders";
 
 const docs = defineCollection({
@@ -33,17 +34,15 @@ const docs = defineCollection({
   // here we only need to accept the messy real-world frontmatter without failing
   // (e.g. `up:` is sometimes a string, sometimes a list, sometimes has a null
   // entry). passthrough() keeps anything we don't name.
-  schema: z
-    .object({
-      title: z.string().optional(),
-      summary: z.string().optional(),
-      date: z.union([z.string(), z.date()]).optional(),
-      order: z.number().optional(),
-      authors: z.array(z.string()).optional(),
-      parent: z.string().optional().optional(),
-      tags: z.array(z.string()).optional(),
-    })
-    .passthrough(),
+  schema: z.object({
+    title: z.string(),
+    summary: z.string(),
+    date: z.union([z.string(), z.date()]),
+    order: z.number().optional(),
+    authors: z.array(z.string()).optional(),
+    parent: z.string().optional().optional(),
+    tags: z.array(z.string()),
+  }),
 });
 
 export const collections = { docs };
