@@ -5,7 +5,7 @@
  *   rendered HTML to this site's conventions:
  *     rehypeHeadingIds  — set every h1/h2/h3 `id` to slugify(text).
  *     rehypeWrapTables  — wrap each <table> in <div class="table-wrap"> (scroll).
- *     rehypeImagePaths  — rewrite `images/foo.png` → `/images/<workshop>/foo.png`,
+ *     rehypeImagePaths  — rewrite `images/foo.png` → `/res/<workshop>/images/foo.png`,
  *                         turn a numeric image `title` into a max-width, and
  *                         promote a lone-image paragraph into <figure class="md-figure">.
  * WHY single slugger (the important one): Astro would otherwise id headings with
@@ -69,7 +69,9 @@ export function rehypeImagePaths() {
       if (node.tagName !== "img") return;
       const src: string = node.properties?.src ?? "";
       if (dir && src.startsWith("images/")) {
-        node.properties.src = `/images/${encodeURIComponent(dir)}/${src.slice("images/".length)}`;
+        // public/res is a symlink to CONTENT_PATH, so the workshop's own images/
+        // folder is served verbatim — no copy step.
+        node.properties.src = `/res/${encodeURIComponent(dir)}/images/${src.slice("images/".length)}`;
       }
       const title: string | undefined = node.properties?.title;
       if (title && /^\d+$/.test(title)) {

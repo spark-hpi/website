@@ -43,9 +43,9 @@ workshop whose name matches their enclosing folder.
 
 - **Wikilinks:** `[[Other Workshop]]`, `[[Other Workshop|alias]]`,
   `[[Other Workshop#Heading]]`. Broken links render as muted strikethrough.
-- **Images:** standard Markdown `![alt](images/foo.png)`. Images in
-  `<workshop>/images/` are copied into `public/images/<workshop>/` at build
-  time.
+- **Images:** standard Markdown `![alt](images/foo.png)`. Images are served
+  straight out of the docs checkout via the `public/res` symlink, so
+  `<workshop>/images/foo.png` is rewritten to `/res/<workshop>/images/foo.png`.
 - **Callouts:** Obsidian-style. Supported types: `note`, `info`, `tip`,
   `success`, `warning`, `failure`, `danger`, `bug`, `example`, `quote`,
   `abstract`, `todo`, `question`. Fold markers (`+` / `-`) are parsed but

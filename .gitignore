@@ -45,9 +45,6 @@ docs/
 # Tooling
 package-lock.json
 
-# build output — populated by copy-images.ts from CONTENT_PATH at build time
-public/images/
-
 # local symlink to the sibling docs checkout (see README Setup)
 public/res
 

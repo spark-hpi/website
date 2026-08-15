@@ -36,8 +36,8 @@ function resolveCover(
   if (cover) {
     if (cover.startsWith("/") || cover.startsWith("http")) return cover;
     return workshopDir
-      ? `/images/${encodeURIComponent(workshopDir)}/${cover}`
-      : `/images/${cover}`;
+      ? `/res/${encodeURIComponent(workshopDir)}/images/${cover}`
+      : `/res/${cover}`;
   }
   // Auto-detect cover.* in the workshop's images folder
   if (!workshopDir) return undefined;
@@ -45,7 +45,7 @@ function resolveCover(
   if (!existsSync(imgDir)) return undefined;
   for (const ext of COVER_EXTS) {
     if (existsSync(join(imgDir, `cover.${ext}`))) {
-      return `/images/${encodeURIComponent(workshopDir)}/cover.${ext}`;
+      return `/res/${encodeURIComponent(workshopDir)}/images/cover.${ext}`;
     }
   }
   return undefined;
