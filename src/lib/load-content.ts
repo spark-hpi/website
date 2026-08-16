@@ -9,6 +9,8 @@
  * Used by: every page (in getStaticPaths and frontmatter) and astro.config.mjs.
  * Gotcha: CONTENT_PATH points OUTSIDE this repo (a checkout of the docs content
  *   repo). Without it set, loadContent throws and the site can't build.
+ * Gotcha: the result is memoized per content root outside dev (see `cache`), so
+ *   callers get a SHARED LoadResult — treat it as read-only, don't mutate nodes.
  */
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -88,6 +90,21 @@ function scanFiles(
   return results;
 }
 
+/**
+ * Cache keyed by resolved content root. A static build calls loadContent() from
+ * astro.config, from every getStaticPaths AND from Base.astro on every rendered
+ * page, so without this the whole tree is re-read from disk once per page.
+ * Disabled under `astro dev` so editing a page's frontmatter (title, up:, order)
+ * shows up on reload instead of needing a server restart.
+ */
+const cache = new Map<string, LoadResult>();
+const cacheable = process.env.NODE_ENV !== "development";
+
+/** Drop the cached scan — for tests, and for anything that edits content on disk. */
+export function clearContentCache(): void {
+  cache.clear();
+}
+
 export function loadContent(contentPath?: string): LoadResult {
   const root = contentPath ?? process.env.CONTENT_PATH;
   if (!root) {
@@ -98,6 +115,9 @@ export function loadContent(contentPath?: string): LoadResult {
   if (!existsSync(root) || !statSync(root).isDirectory()) {
     throw new Error(`CONTENT_PATH is not a directory: ${root}`);
   }
+
+  const cached = cache.get(root);
+  if (cached) return cached;
 
   const pages: LoadedPage[] = [];
   for (const { relPath, abs, workshopDir } of scanFiles(root)) {
@@ -125,5 +145,7 @@ export function loadContent(contentPath?: string): LoadResult {
   }
 
   const hierarchy = buildHierarchy(pages);
-  return { hierarchy, pages, contentPath: root };
+  const result: LoadResult = { hierarchy, pages, contentPath: root };
+  if (cacheable) cache.set(root, result);
+  return result;
 }
