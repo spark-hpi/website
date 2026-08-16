@@ -1,4 +1,16 @@
 {
+  "http://IP:8123": {
+    "failed": true,
+    "fetchedAt": 1786873398073
+  },
+  "http://localhost:4567": {
+    "failed": true,
+    "fetchedAt": 1786873398073
+  },
+  "http://localhost:8123": {
+    "failed": true,
+    "fetchedAt": 1786873398073
+  },
   "https://app.netbird.io": {
     "title": "NetBird Dashboard",
     "description": "NetBird combines a configuration-free peer-to-peer private network and a centralized access control system in a single open-source platform",
@@ -6,11 +18,11 @@
   },
   "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-13.4.0-amd64-netinst.iso": {
     "failed": true,
-    "fetchedAt": 1782550632732
+    "fetchedAt": 1786873398073
   },
   "https://cdimage.debian.org/debian-cd/current/arm64/iso-cd/debian-13.4.0-arm64-netinst.iso": {
     "failed": true,
-    "fetchedAt": 1782550632732
+    "fetchedAt": 1786873398073
   },
   "https://community-scripts.org/": {
     "title": "Proxmox VE Helper-Scripts",
@@ -23,6 +35,10 @@
     "description": "This script provides options for managing Proxmox VE repositories, including disabling the Enterprise Repo, adding or correcting PVE sources, enabling the No-S…",
     "image": "https://community-scripts.org/api/og/post-pve-install",
     "fetchedAt": 1781173388373
+  },
+  "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe?utm_source=docker&utm_medium=webreferral&utm_campaign=docs-driven-download-win-amd64": {
+    "failed": true,
+    "fetchedAt": 1786873398073
   },
   "https://docs.docker.com/desktop/setup/install/windows-install/": {
     "title": "Windows",
@@ -57,6 +73,24 @@
     "description": "What's Changed\n\nREADME: Fix script name typo by @ahresse in #1114\nUpdated Russian translations by @nafanz in #1118\nItalian language update by @bovirus in #1112\n1.9.6: Fix roll-up by @tdewey-rpi in ...",
     "image": "https://opengraph.githubassets.com/d68f48d23d5884cca49e47bbc3bdc7e1b57fa40ecb3740f3d3dfa6c6f07e4417/raspberrypi/rpi-imager/releases/tag/v1.9.6",
     "fetchedAt": 1777377577213
+  },
+  "https://github.com/spark-hpi/larapaper": {
+    "title": "GitHub - spark-hpi/larapaper: A self-hosted, community-driven server (BYOS) with Recipe support in PHP's Laravel framework",
+    "description": "A self-hosted, community-driven server (BYOS) with Recipe support in PHP's Laravel framework - spark-hpi/larapaper",
+    "image": "https://opengraph.githubassets.com/7ae6a487ad5ac5c897b3a72039cd6ef39effda4f6451396085832fee378f147f/spark-hpi/larapaper",
+    "fetchedAt": 1786873398073
+  },
+  "https://github.com/spark-hpi/larapaper/blob/main/README.md": {
+    "title": "larapaper/README.md at main · spark-hpi/larapaper",
+    "description": "A self-hosted, community-driven server (BYOS) with Recipe support in PHP's Laravel framework - spark-hpi/larapaper",
+    "image": "https://opengraph.githubassets.com/7ae6a487ad5ac5c897b3a72039cd6ef39effda4f6451396085832fee378f147f/spark-hpi/larapaper",
+    "fetchedAt": 1786873398073
+  },
+  "https://github.com/usetrmnl/larapaper": {
+    "title": "GitHub - usetrmnl/larapaper: A self-hosted, community-driven server (BYOS) with Recipe support in PHP's Laravel framework",
+    "description": "A self-hosted, community-driven server (BYOS) with Recipe support in PHP's Laravel framework - usetrmnl/larapaper",
+    "image": "https://opengraph.githubassets.com/8bd6b3edb355615b9ea0889704ede75fcccd398ca4660661992fc67a9220116e/usetrmnl/larapaper",
+    "fetchedAt": 1786873398073
   },
   "https://github.com/usetrmnl/trmnl-agent-skills": {
     "title": "GitHub - usetrmnl/trmnl-agent-skills: trmnl.com template writer agent's prompts and skills",
@@ -102,7 +136,7 @@
   },
   "https://makerworld.com/en": {
     "failed": true,
-    "fetchedAt": 1782550632732
+    "fetchedAt": 1786873398073
   },
   "https://netbird.io": {
     "title": "NetBird - Open Source Zero Trust Networking",
@@ -166,17 +200,25 @@
     "image": "https://www.home-assistant.io/images/default-social.png",
     "fetchedAt": 1776714008860
   },
+  "https://www.mouser.de/": {
+    "failed": true,
+    "fetchedAt": 1786873398073
+  },
   "https://www.pcbway.com/": {
     "title": "China PCB Prototype & Fabrication Manufacturer - PCB Prototype the Easy Way",
     "fetchedAt": 1781173388373
   },
+  "https://www.printables.com": {
+    "failed": true,
+    "fetchedAt": 1786873398073
+  },
   "https://www.raspberrypi.com/software/": {
     "failed": true,
-    "fetchedAt": 1782550632732
+    "fetchedAt": 1786873398073
   },
   "https://www.reichelt.de": {
     "failed": true,
-    "fetchedAt": 1782550632732
+    "fetchedAt": 1786873398073
   },
   "https://www.thingiverse.com": {
     "title": "Thingiverse - The community for Open Hardware",
@@ -189,143 +231,223 @@
     "fetchedAt": 1777377577213
   },
   "https://www.youtube.com/@BenVallack": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Ben Vallack",
+    "description": "This channel is all about uncovering unconventional wisdom to optimize day-to-day workflows. I cover all kinds of interesting ideas from custom keyboards, DIY software, outdoor and lifestyle, cars, pocket tools and EDC, interesting workflows around the home, and more. I explore themes of Unix philosophy, intentionalism, ownership, utility, aesthetics and design and, of course, workflow. \n\n### Join this channel to get access to my zettelkasten notes vault and my growing library of scripts and powerful software tools (joining is a paid membership that lets you support the channel):\nhttps://www.youtube.com/channel/UC4NNPgQ9sOkBjw6GlkgCylg/join\n\n### About me!\nI'm co-founder of SetSeed, an all-in-one online website and customer platform. Follow me on LinkedIn or visit https://www.setseed.com to learn more.",
+    "image": "https://yt3.googleusercontent.com/KbC0BfvFQGhhItIbXvpFkmtCYsqavXg7vKC25zusoVs-mPowGmg5_r-cyT9jsCSYfRiwF85o=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@BennJordan": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Benn Jordan",
+    "description": "Hi, I'm Benn. I'm into music and science. Sorry about my eyebrow. \nContact email below is my management, not me personally. \n",
+    "image": "https://yt3.googleusercontent.com/n4yN6OoQTOtdKr9MtPVRhT38hPTP0NUkc10Ni6wZWljek_9XRq0EuBi7PbmJb2bRs_WxcgQe=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@CheeseTurbulence": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Cheese Turbulence",
+    "description": "Just making videos about the tech I like 🙂\n",
+    "image": "https://yt3.googleusercontent.com/BVr7ufp7N6RcUzSFtW5ALyjT-nt96438-fyO_2q9YMYSYorb0nM2acR7QcoqCyiBSQzyTsrToA=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@DIYPerks": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "DIY Perks",
+    "description": "I'm Matt, and here on DIY Perks you'll find plenty of interesting projects on a variety of topics!\n\nWant help with a project? The official forum is a perfect place to start! Don't forget to help others out with your knowledge, too! https://forum.diyperks.com\n\nWe also have a live-chat Discord server so you can talk DIY to like-minded individuals! Check it out! https://discord.gg/diyperks\n\nIf you need to get in touch with Matt directly for sponsorship enquiries, fan mail, or just to say 'hi' (no project questions please) then send an email to diyperks@gmail.com",
+    "image": "https://yt3.googleusercontent.com/xV8LuvhCzate3ar45xGfsopcV1THwTT6i0jftI999HV8yb-ASDWxnU2DhZUEKDib47UbC7Rtcw=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@Engineezy": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Engineezy",
+    "description": "Engineering with style and ease 🕺\n\nDownload Engineezy 3D Printable models here:\nWebsite: https://engineezy.com\n\nIf you would like to support my channel, please consider become an Enginartonaut Patreon member. Thank you for supporting the arts:\nPatreon: patreon.com/Engineezy\n\nInstagram: @Engineezy\n",
+    "image": "https://yt3.googleusercontent.com/D1x_o1GHqMfkDonqX-lcSvEhx1XLiZf_vx2IGrdH7pe8SDnFztSvxp1CLQ_NyRbXWni5l85mFw=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@ExcessiveOverkill": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Excessive Overkill",
+    "description": "I make cool stuff.",
+    "image": "https://yt3.googleusercontent.com/ytc/AIdro_lmceM3ImoCYAldJBf8449nbRHYrFRxKgzLZJYtsYv8vg=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@HTXStudio": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "HTX Studio",
+    "description": "We are a DIY team from Hangzhou, China.\nOur goal is to create fun and engaging videos.\nWe are NOT involved in any cryptocurrency trading—please verify accounts \n\nWe only have 2 accounts on YouTube:\n1.English channel：http://www.youtube.com/@HTXStudio\n2.Chinese channel：http://www.youtube.com/@hetongxue\n\nBUSINESS: xhaxx1123@gmail.com\n",
+    "image": "https://yt3.googleusercontent.com/oZp4RCNcpuKIx01_-zjE7c07oeWXZgzogMhGunX-mILRW27xgN8xKKjo4UVTAmAtdB0-PpsN8g=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@INSIDEVERYTHING1": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "INSIDE EVERYTHING",
+    "description": "Charles is on a mission to uncover what’s inside everything one object at a time.\nhttps://linktr.ee/insideverything\n",
+    "image": "https://yt3.googleusercontent.com/pFGdZPYlGyozSQgRtEzsnIKYJOmLLycVdPMpGz_Bez-zjzZ5kbPqfJHkeBMvSzlVJ-1gYay0=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@JeffGeerling": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Jeff Geerling",
+    "description": "Father, author, developer, maker. Sometimes called \"an inflammatory enigma\".\n",
+    "image": "https://yt3.googleusercontent.com/RndiKipuEK9TRHOw-ORouGfXDHI_-PedjdwEMYpnGNct46LMa2cnoV4b2Y_shD6kc0Dhi8kG_Q=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@KnowArt": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Know Art",
+    "description": "Simple insights",
+    "image": "https://yt3.googleusercontent.com/3K4nBCSU5aWHhAk1ViVci4JLAbz1XoVGjRy1vXR2vgKcP53msSqhQimQdt4WM9dRjWkaL3MMHw=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@MadeByDennis": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Made By Dennis",
+    "description": "Watch along as I attempt to create DIY electronics, 3d printing, computing, robots projects to improve my life. I try to build a lot of components from scratch that hopefully we can both learn how stuff works.\n\nEmail: madebydennis@intheblackmedia.com\n",
+    "image": "https://yt3.googleusercontent.com/7NAfI6cGFipEfQfGAnle04phs16XnhvEfyKsfqCVHjO0AKdKN_cIjVM6gSWGhqknNM6BQKqc=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@MadeWithLayers": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Made with Layers (Thomas Sanladerer)",
+    "description": "Everything about 3D Printing and Making! Build guides, tutorials, tips and reviews around the new generation of consumer and prosumer 3D printers (and more)!\n\nComments are moderated, offensive content, racism and blatant self-promotion will be removed.\n\nLicensing: All Videos are (c) Thomas Sanladerer, all rights reserved, unless otherwise noted.\n\nFor any video, you may:\n- Embed them in your Website using the YouTube player. Attribution is mandatory, and it should not be embedded in a way that disables features of the YouTube player or suggests anyone else but this channel is the original author of the video.\n- Show/display/\"perform\" any of my videos, publicly or privately. The same conditions regarding attribution apply.\n\nIf you want to use any of my content in a different way, send me a message and we can work something out!",
+    "image": "https://yt3.googleusercontent.com/b7R_4be18afRCpEPUe4R_XVGNW2qWfBGVrga1e-BmQPjmqEL0mg0L1er1sVSXwXSIgKwS1g0l_Y=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@Polyfjord": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Polyfjord",
+    "description": "Hello, I'm a digital artist from Norway! 🌊\n",
+    "image": "https://yt3.googleusercontent.com/oaafUJB_PlBuEHNkvQDtvsI8Qt8ZoLoiizNNQm-8U1j0KOQLh2-PCOXf2D3PFOYJ8pEbw802=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@PosyMusic": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Posy",
+    "description": "A channel about anything... But usually something geeky or nerdy.\n\nPosy is my artist name since 2005, and indeed not related in any way to the content of this channel...\n\nCurrently I do not have accounts and/or am not active on any other social platforms. (So I'm NOT on telegram etc.)\n",
+    "image": "https://yt3.googleusercontent.com/5NEhVt_-6LxLftewkBaMA8L22XGj3U_vLxrLd2RgZ-m6FdK-Jj6FtmrhRC9BEDlHD5ThHpFDhg=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@StuffMadeHere": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Stuff Made Here",
+    "description": "I've been building things for as long as I can remember. It all started when my dad exposed me to plastic model building and soldering when I was around 4 years old. That set me on a path to building increasingly complex things and becoming an engineer. My goal is to do the same for as many people as possible by exposing them to the joy of engineering, fabricating and creating things out of nothing. If I'm lucky a few people may become engineers, which would be great for the world. Engineering is awesome.\n",
+    "image": "https://yt3.googleusercontent.com/ytc/AIdro_mzfzJ9E1WEzyt1YlPXemHOwGBBnVCKzXva_mzmS5qqMg=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@TechnologyConnections": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Technology Connections",
+    "image": "https://yt3.googleusercontent.com/ytc/AIdro_lG8iUz4mpHBrzJSDYEKT0qe2XmhZUUUzhzcJbz9cE3rQ=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@TheDucky3D": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Ducky 3D",
+    "description": "Creating tools and tutorials for the 3D Blender world",
+    "image": "https://yt3.googleusercontent.com/FJ7as8ylKBl1ljf_rXqCp2BhdyMfoMXm91-B_on0QyrRcaImGFd0YWZQrGtHpRjux4mEbrRG=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@TheStockPot-AU/videos": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "The Stock Pot",
+    "description": "Named as a pun on my last name, Stock, and inspired by the idea of a 'mixing pot,' this channel is a blend of all my favorite things—home automation, cutting-edge tech, and hands-on DIY projects. Whether you're here for smart home ideas, geeky gadget deep dives, or just some clever tinkering, you’ll find it all bubbling away in The Stock Pot.\n\nSubscribe to stir up your curiosity and cook up your own creations!\n\nFor business inquiries, please contact: business@thestockpot.net\n",
+    "image": "https://yt3.googleusercontent.com/rehXlojulFL0JHdpOQ5hZ6fpC69SwuNhPvawG9PELLx05VKTULuEKaVPF37N28qk6r275nWa=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@ThisDoesNotCompute": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "This Does Not Compute",
+    "description": "Vintage technology, tech reviews, DIY and more!\n\nWanna send a postcard or donate an item to the show? You can send it to:\n\nThis Does Not Compute\nPO Box 131141\nSt. Paul, MN 55113",
+    "image": "https://yt3.googleusercontent.com/rqzJaD6yRwzTZqaEg1fUcWXFK4PZ2bpwYjkCcFKuV_rNV3YEIUXysgkZ2Nppioe2cbw9aYud1sE=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@axiometa": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Axiometa",
+    "description": "Axiometa is a team of a few engineers and video makers!\n",
+    "image": "https://yt3.googleusercontent.com/CGYuoJx4VAy7uP_luXQw3j8u-53jIITUq-FM6MiuHPt10GD9NEHyvCHiPJhCyupPy2oTVEWV=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@bitluni": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "bitluni",
+    "description": "On bitluni's lab, you can find elaborate and funny tutorial videos about building gadgets. Nerdy entertainment guaranteed!\nSince this is my passion I started to do YouTube full time since August 2017. This way we can create more projects and you can enjoy a new video every week. \nSubscribe and get updated about building music instruments, synthesizers, home automation, 3D printers and tinkering stuff...",
+    "image": "https://yt3.googleusercontent.com/mTdwCVPGoL7k3oTSBGsPuFN-fK6ZEnWvEUmoAg_jkL0HwGQK95H_f5001B-kyVynrfAEtDA7aQ=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@christianlempa": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Christian Lempa",
+    "description": "IT & Tech Nerd | Vibe Coder | Automation Fanboy\n\nFor professional inquiries, please contact: christianlempa@makrwatch.com\n\n______\nLegal Notice / Impressum:\n\nCL Creative - Christian Lempa\nc/o Block Services\nStuttgarter Str. 106\n70736 Fellbach\n",
+    "image": "https://yt3.googleusercontent.com/bCGRJiR-Xv6V-9iPGlOqV0wPJ836A2S5r-eQpdPVcGOAW_iRk9Dl3lfV1Hab_OlSfQubB30UIA=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
+  },
+  "https://www.youtube.com/@dellpartspeople": {
+    "title": "Parts-People Dell Laptop Experts",
+    "description": "I have been specializing in Dell laptop parts and repairs for more than 25 years, and now I make videos diagnosing and repairing complicated Dell and Alienware laptop motherboard issues. \n\nSponsorship/collaboration inquiries: partnerships@nathanmorganmedia.com\n",
+    "image": "https://yt3.googleusercontent.com/VcIOTgj9Ys7zcwtzDwVzYEG5X2z5rSu0g03uDoXZL8MGgnQFjDKyKFW_SdJCSxwTeIOxQ5FtJ2M=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@deltahedra3D": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Deltahedra",
+    "description": "French Engineer doing CAD stuffs.\n",
+    "image": "https://yt3.googleusercontent.com/VfIjUSNn9tS15LNhDVCAfbxCEFfqFndr517JZNVrksqiwLWWWMk4LZBdX2LomV2b7JujKsWAUU4=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@f4micom/videos": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "f4mi",
+    "description": "[insert cool and original channel description here]\n\nhttps://twitter.com/f4micom\n\nFor business inquiries, you can send an email to f4mi@intheblackmedia.com\n",
+    "image": "https://yt3.googleusercontent.com/mtZRMqGgbjmI3e4FWRZMSvR-wtp3HHW2I7I4rJ6Lpy8ArcrysZTZj0WMRURYFMW7N-EO6GVFhZQ=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@flurples": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "flurples",
+    "description": "just making stuff",
+    "image": "https://yt3.googleusercontent.com/ytc/AIdro_nIcJJn6wLHXX6fM3D40-afCYEPhH6eHBfwxRWEK3XtIVY=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@greatscottlab": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "GreatScott!",
+    "description": "Awesome Electronics Tutorials, Projects and How To´s\n\nWARNING!: DO NOT SEND MAIL TO THE ADDRESS GIVEN BY THE IMPRINT!\n\nImprint/Impressum:\nGreatScott!\nc/o Block Services\nStuttgarter Str. 106\n70736 Fellbach\n\nWARNING!: DO NOT SEND MAIL TO THE ADDRESS GIVEN BY THE IMPRINT!\n\nDisclaimer:\nThe shown videos are for educational & entertainment purposes only. Use the given information at your own risk. Do not work beyond your capability and always hire a professional if you are not sure what you are doing. Remember: Safety first!\n",
+    "image": "https://yt3.googleusercontent.com/XLvDKb0nskFt02mKB8b9BxJak2O9xgutVgY2ijxkwNKPeGjYKIPF7vcI7okv_J1nwJFSvUGbYQ=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@henry_kidman": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "henry kidman",
+    "image": "https://yt3.googleusercontent.com/yPqAYDblopTRq1AALDh1MoRVpwrP-9kUUKG_5JQmOqlsE5AcyM_FTwv0VFvrT7R7vcCKz7YZ3g=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@henryseg": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Henry Segerman",
+    "description": "Mathematical making: 3D printing, dice, virtual reality, generative art, etc. Also see http://www.segerman.org, @henryseg",
+    "image": "https://yt3.googleusercontent.com/ApsbLToZvKX8b_EXpf84EUf4-Axu3HCDyWbImAeFnoVKqbe4vYYMSuNyq8CvC7WaZiaO-Pdm2Q=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@matthewlim88": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "matthew lim",
+    "description": "Uncertified tinkerer, designer and diy-er",
+    "image": "https://yt3.googleusercontent.com/J7wRwWYx8to9tjrifMO_UQ5-DrB-zRZB5NeNHM08z5zongXz2Sb0o0F8fZ1OgLeFKIvkrPAI2w=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@mediacccde": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "media.ccc.de",
+    "description": "The real official channel of the chaos computer club, operated by the CCC VOC (https://c3voc.de)\n\nIf you are missing a talk from a CCC event, you might find it already at media.ccc.de as we currently experiment with delayed publication on YouTube.\n\nComments on videos are typically disabled as we do not have resources for proper moderation. If you actually want to reach the speakers we recommend to reach out via the contact details on their lecture slides.",
+    "image": "https://yt3.googleusercontent.com/j5TBLSYKuE3rg_469Qrl2ACwkmrdWqV5mGjv3UzkoSidoI0BdfGGyQWS8DmvXaWrigmj3tnFGw=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@pierogiengineering": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "pierogi engineering ",
+    "description": "IG: _____polak",
+    "image": "https://yt3.googleusercontent.com/9U6DGzDmC9eu5niivwzapWl4G_tg7ltyMRDgNrs4Eaws1L_o6sqTS2aDD78mFyOo6hfn7XRzFQ=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@salimbenbouz": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Salim Benbouziyane",
+    "description": "Business Inquiries: salim@intheblackmedia.com\n\nHi, I'm Salim 👋\nI love designing and building projects around 3D printing, electronics and all things DIY. Join me as I learn and experiment, all in hopes of inspiring and sparking the same passion in others. \n",
+    "image": "https://yt3.googleusercontent.com/fE5TtOMpMqeU10fQVkNhzcn3gCtAuBNhIxjUe84mUuQulaxVICoUWcvqgE3iFyGMUzP4xGMKR7Y=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@soiboisoft": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "soiboi soft",
+    "description": "soiboi soft is building the future of soft robotics and squishy machines! 🤖🦑✨\n\nFor business inquiries: soiboi_soft@intheblackmedia.com\n",
+    "image": "https://yt3.googleusercontent.com/5Av-9Pn8fHnGNlPita2ohOHTnMiVLTMnfQ2LV7bhiXP8xGUxfWjhJsGj7IYvL43H-qeq7oQOww=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@styropyro": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "styropyro",
+    "description": "I'm a science maniac that loves building huge lasers and playing with electricity and chemicals.\n\nOfficially I am a chemist, but I get my hands dirty in all aspects of mad science. When it comes to building stuff, I'm certainly an \"old school\" kind of maker as I'd rather use a hacksaw and soldering iron than design 3D parts on a computer. \n\nI started this channel in 2006 and handle all of the building, filming, and editing by myself. This means you'll never get a set upload schedule. :D What I lack in video editing skills I try to make up with crazy and original content!\n\nNeed help with a project? Or do you just want to chat about science projects with other tinkerers? If so, join my Discord server! There are TONS of knowledgeable members there, so if I can't help with a question, they can! It really is an amazing community.  https://discord.gg/styropyro",
+    "image": "https://yt3.googleusercontent.com/f3_lLAyk2skYuUCIBJlwyQwwgLYdOCRZzGlLO0GhB2Ajpq0wYU3tHrrmuHRb6BXtFk-hFChZ_Ic=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
   },
   "https://www.youtube.com/@worksbydesign": {
-    "failed": true,
-    "fetchedAt": 1782550632732
+    "title": "Works By Design",
+    "description": "Video projects about Design, Engineering, and more. Hope to learn by doing and help others along the way.",
+    "image": "https://yt3.googleusercontent.com/lzW3FyG5pSJUU5GTpr5y3uv5fRyNVkIuj4Y7IFa0kUUumGIcugewrEzbEk7FP9lxvyvOaJTR=s900-c-k-c0x00ffffff-no-rj",
+    "fetchedAt": 1786873398073
+  },
+  "https://www.youtube.com/watch?v=dQw4w9WgXcQ": {
+    "title": "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)",
+    "description": "The official video for “Never Gonna Give You Up” by Rick Astley. Never: The Autobiography 📚 OUT NOW! Follow this link to get your copy and listen to Rick’s ...",
+    "image": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
+    "fetchedAt": 1786873398073
   }
 }
