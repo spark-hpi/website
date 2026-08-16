@@ -287,71 +287,40 @@ function hostnameOf(url: string): string {
   }
 }
 
+/**
+ * OpenGraph metadata for one URL, via open-graph-scraper (dev-only, dynamically
+ * imported so it never enters the site build graph — Base.astro imports this
+ * module for buildPreviewMap, which does not fetch).
+ * Falls back to the <title> tag and to twitter:* when og:* is absent.
+ */
 async function fetchOg(
   url: string,
 ): Promise<{ title?: string; description?: string; image?: string }> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  try {
-    const res = await fetch(url, {
-      redirect: "follow",
-      signal: controller.signal,
+  const { default: ogs } = await import("open-graph-scraper");
+  const { error, result } = await ogs({
+    url,
+    timeout: FETCH_TIMEOUT_MS / 1000,
+    fetchOptions: {
       headers: {
         "user-agent":
-          "Mozilla/5.0 (compatible; SparkLinkPreviewBot/1.0; +https://spark.example)",
-        accept: "text/html,application/xhtml+xml",
+          "Mozilla/5.0 (compatible; SparkLinkPreviewBot/1.0; +https://spark-hpi.de)",
       },
-    });
-    if (!res.ok) throw new Error(`status ${res.status}`);
-    const html = (await res.text()).slice(0, 64 * 1024);
-    const title = pickMeta(html, "og:title") ?? pickTitleTag(html);
-    const description =
-      pickMeta(html, "og:description") ?? pickMeta(html, "description");
-    const imageRaw = pickMeta(html, "og:image");
-    const image = imageRaw ? resolveUrl(imageRaw, url) : undefined;
-    return { title, description, image };
-  } finally {
-    clearTimeout(timer);
+    },
+  });
+  // Rethrow the underlying error, not a summary of it: doBuild inspects
+  // name/message to tell "this host has no OG tags" (cache the miss) from "the
+  // network is down" (don't poison the cache for 7 days).
+  if (error) {
+    throw result.errorDetails ?? new Error(`${result.error ?? "failed"}: ${url}`);
   }
-}
-
-function pickMeta(html: string, name: string): string | undefined {
-  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const patterns = [
-    new RegExp(
-      `<meta[^>]+?(?:property|name)\\s*=\\s*["']${esc}["'][^>]*?content\\s*=\\s*["']([^"']*)["']`,
-      "i",
-    ),
-    new RegExp(
-      `<meta[^>]+?content\\s*=\\s*["']([^"']*)["'][^>]*?(?:property|name)\\s*=\\s*["']${esc}["']`,
-      "i",
-    ),
-  ];
-  for (const re of patterns) {
-    const m = html.match(re);
-    if (m && m[1]) return decodeHtml(m[1]).trim();
-  }
-  return undefined;
-}
-
-function pickTitleTag(html: string): string | undefined {
-  const m = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  return m ? decodeHtml(m[1]).trim() : undefined;
-}
-
-function decodeHtml(s: string): string {
-  return s
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&#x([0-9a-f]+);/gi, (_, c) =>
-      String.fromCodePoint(parseInt(c, 16)),
-    )
-    .replace(/&#(\d+);/g, (_, c) => String.fromCodePoint(Number(c)));
+  const image = result.ogImage?.[0]?.url ?? result.twitterImage?.[0]?.url;
+  return {
+    title: result.ogTitle ?? result.twitterTitle ?? result.dcTitle,
+    description:
+      result.ogDescription ?? result.twitterDescription ?? result.dcDescription,
+    // og:image may be relative; the scraper leaves it as authored.
+    image: image ? resolveUrl(image, url) : undefined,
+  };
 }
 
 function resolveUrl(ref: string, base: string): string | undefined {
