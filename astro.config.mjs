@@ -8,7 +8,7 @@ import {
   buildWikiResolver,
   remarkWikilinks,
 } from "./src/lib/remark-wikilinks.ts";
-import { remarkCallouts } from "./src/lib/remark-callouts.ts";
+import rehypeCallouts from "rehype-callouts";
 import {
   rehypeHeadingIds,
   rehypeWrapTables,
@@ -88,6 +88,38 @@ function wikilinkReport() {
   };
 }
 
+/*
+ * Obsidian callouts (`> [!warning] Title`), via rehype-callouts.
+ *
+ * The tags/props below pin the emitted markup to what src/styles/global.css has
+ * always styled — <aside class="callout callout-TYPE" data-callout="TYPE"> with
+ * a .callout-title row — so the plugin swap is invisible in the page. Indicators
+ * are off because the icon is a Departure Mono glyph drawn by CSS
+ * (.callout-title::before), not an inline SVG.
+ *
+ * A `+`/`-` fold marker now produces a real <details>; the container classes are
+ * the same, so it picks up the same styling.
+ */
+const calloutOptions = {
+  theme: "obsidian",
+  showIndicator: false,
+  tags: {
+    nonCollapsibleContainerTagName: "aside",
+    nonCollapsibleTitleTagName: "div",
+    contentTagName: "div",
+    titleTextTagName: "span",
+  },
+  props: {
+    containerProps: (_node, type) => ({
+      className: ["callout", `callout-${type}`],
+      "data-callout": type,
+    }),
+    titleProps: { className: ["callout-title"] },
+    titleTextProps: { className: ["callout-label"] },
+    contentProps: { className: ["callout-content"] },
+  },
+};
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://spark-hpi.de",
@@ -102,8 +134,9 @@ export default defineConfig({
     },
     processor: unified({
       smartypants: false,
-      remarkPlugins: [remarkCallouts, [remarkWikilinks, { resolver }]],
+      remarkPlugins: [[remarkWikilinks, { resolver }]],
       rehypePlugins: [
+        [rehypeCallouts, calloutOptions],
         rehypeHeadingIds,
         rehypeWrapTables,
         rehypeImagePaths,

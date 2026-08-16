@@ -163,10 +163,10 @@ a:hover {
   background: var(--callout-bg);
   border-radius: 0 2px 2px 0;
 }
-.callout > :first-child {
+.callout-content > :first-child {
   margin-top: 0;
 }
-.callout > :last-child {
+.callout-content > :last-child {
   margin-bottom: 0;
 }
 
@@ -181,14 +181,22 @@ a:hover {
   color: var(--callout-accent);
   margin: 0 0 8px 0;
 }
-.callout-icon {
+/* Type glyph. A font character rather than an inline SVG, which is why the
+   plugin runs with showIndicator: false. */
+.callout-title::before {
+  content: var(--callout-glyph, "");
   font-family: "Departure Mono", var(--mono);
   font-style: normal;
   display: inline-block;
   line-height: 1;
 }
-.callout-icon::before {
-  content: var(--callout-glyph, "");
+/* Collapsible callouts (`> [!note]-`) render as <details>. */
+details.callout > summary {
+  cursor: pointer;
+  list-style: none;
+}
+details.callout > summary::-webkit-details-marker {
+  display: none;
 }
 
 /* ── Link preview popover ─────────────────────────────────────────── */

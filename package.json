@@ -23,6 +23,7 @@
     "astro": "^6.4.6",
     "dotenv": "^17.4.2",
     "gray-matter": "^4.0.3",
+    "rehype-callouts": "^2.2.0",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "three": "^0.184.0",
