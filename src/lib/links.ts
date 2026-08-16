@@ -13,9 +13,12 @@
  * GOTCHA: resolution is by bare basename via hierarchy.byBasename (see its
  *   collision note). A linked page whose parent chapter title isn't found is
  *   appended at the end rather than dropped.
+ * PARSING: shares parseWikilinks() with the renderer (wikilink.ts), and strips
+ *   code first — a [[Page]] inside a fenced block is not a real link.
  */
 import type { Hierarchy } from "./hierarchy";
 import { extractSubheadings, type TocItem } from "./toc";
+import { parseWikilinks, stripCode } from "./wikilink";
 
 export interface LinkedPage {
   title: string;
@@ -24,7 +27,6 @@ export interface LinkedPage {
   headings: TocItem[];
 }
 
-const WIKI_NAME_RE = /(?<!!)\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|[^\]]+)?\]\]/g;
 const GLOSSARY_RE = /^glossary$/i;
 
 export function collectLinkedPages(
@@ -36,11 +38,10 @@ export function collectLinkedPages(
   const out: LinkedPage[] = [];
   for (const raw of sources) {
     if (!raw) continue;
-    WIKI_NAME_RE.lastIndex = 0;
-    let m: RegExpExecArray | null;
-    while ((m = WIKI_NAME_RE.exec(raw)) !== null) {
-      const name = m[1].trim();
-      const target = hierarchy.byBasename.get(name);
+    for (const token of parseWikilinks(stripCode(raw))) {
+      // Embeds are images, and a bare [[#Heading]] points at the current page.
+      if (token.embed || !token.name) continue;
+      const target = hierarchy.byBasename.get(token.name);
       if (!target) continue;
       if (excludeFilenames.has(target.filename)) continue;
       if (seen.has(target.filename)) continue;

@@ -16,6 +16,10 @@ import {
   rehypeImagePaths,
 } from "./src/lib/rehype-markdown.ts";
 import { rehypeLinkPreviewKeys } from "./src/lib/rehype-link-preview-keys.ts";
+import {
+  checkWikilinks,
+  formatWikilinkIssues,
+} from "./src/lib/wikilink-report.ts";
 
 /*
  * astro.config.mjs — wires the native markdown pipeline + content sync.
@@ -43,7 +47,7 @@ const CONTENT_PATH = process.env.CONTENT_PATH;
 const hierarchy = CONTENT_PATH ? loadContent(CONTENT_PATH).hierarchy : null;
 const resolver = hierarchy
   ? buildWikiResolver(hierarchy)
-  : () => ({ broken: true, url: "" });
+  : () => ({ broken: "page", url: "" });
 
 // Map an entry's absolute file path → the URL of the page it renders on, so the
 // preview-keys plugin can key same-page `#anchor` links. Content is one level
@@ -57,10 +61,36 @@ function resolvePageBase(filePath) {
   return node.depth === 2 ? `/${root.slug}/${node.slug}` : `/${root.slug}`;
 }
 
+/*
+ * Build-time wikilink check. Runs off the same one-shot fs scan as the resolver
+ * (NOT off the rendered output — Astro caches rendered entries, so a plugin-side
+ * report would come back falsely clean on incremental builds). Reported once at
+ * config:done, so dev and build both see it; WIKILINK_STRICT=1 fails the build.
+ */
+function wikilinkReport() {
+  return {
+    name: "wikilink-report",
+    hooks: {
+      "astro:config:done": ({ logger }) => {
+        const issues = hierarchy
+          ? checkWikilinks(hierarchy.byFilename.values(), resolver)
+          : [];
+        if (issues.length === 0) {
+          logger.info("all wikilink targets resolve");
+          return;
+        }
+        const summary = `${issues.length} broken wikilink(s):\n${formatWikilinkIssues(issues)}`;
+        if (process.env.WIKILINK_STRICT) throw new Error(summary);
+        logger.warn(summary);
+      },
+    },
+  };
+}
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://spark-hpi.de",
-  integrations: [sitemap()],
+  integrations: [sitemap(), wikilinkReport()],
   markdown: {
     syntaxHighlight: false,
     processor: unified({
