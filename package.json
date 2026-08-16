@@ -13,7 +13,7 @@
     "astro": "astro",
     "sync": "git -C ../docs pull --ff-only || git clone --depth 1 https://github.com/spark-hpi/docs ../docs",
     "deploy": "bun run sync && astro build && wrangler pages deploy dist --project-name=spark",
-    "generate-link-previews": "tsx scripts/generate-link-previews.ts",
+    "generate-link-previews": "bun scripts/generate-link-previews.ts",
     "refresh-link-previews": "rm -f src/data/link-previews.json && echo '{}' > src/data/link-previews.json && bun run generate-link-previews",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
@@ -38,7 +38,6 @@
     "open-graph-scraper": "^6.12.0",
     "rehype-stringify": "^10.0.1",
     "remark-rehype": "^11.1.2",
-    "tsx": "^4.22.4",
     "vitest": "^4.1.8",
     "wrangler": "^4.99.0"
   }

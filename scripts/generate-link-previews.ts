@@ -2,7 +2,7 @@
  * generate-link-previews.ts — fetch OpenGraph metadata for external links and
  * update the committed src/data/link-previews.json cache.
  *
- * Run via `npm run generate-link-previews`. This is deliberately kept out of
+ * Run via `bun run generate-link-previews`. This is deliberately kept out of
  * dev/build (src/lib/previews.ts's buildPreviewMap is cache-only) so `astro dev`
  * and `astro build` never block on network requests.
  */
