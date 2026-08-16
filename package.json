@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
+    "@floating-ui/dom": "^1.8.0",
     "astro": "^6.4.6",
     "dotenv": "^17.4.2",
     "gray-matter": "^4.0.3",

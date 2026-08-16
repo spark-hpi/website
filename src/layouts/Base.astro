@@ -68,7 +68,10 @@ const previewJson = JSON.stringify(previewMap)
   <body>
     <slot />
     <script type="application/json" id="link-previews" set:html={previewJson} />
-    <script is:inline>
+    <script>
+      // Bundled (not is:inline) so it can import Floating UI for placement.
+      import { computePosition, flip, shift, offset } from "@floating-ui/dom";
+
       (() => {
         const dataEl = document.getElementById("link-previews");
         if (!dataEl) return;
@@ -186,7 +189,6 @@ const previewJson = JSON.stringify(previewMap)
           el.style.visibility = "hidden";
           currentAnchor = a;
           position(el, a);
-          el.style.visibility = "";
         }
 
         function hide() {
@@ -194,25 +196,20 @@ const previewJson = JSON.stringify(previewMap)
           currentAnchor = null;
         }
 
+        // `flip` moves the card above the link when it would run off the bottom,
+        // `shift` slides it along the viewport edge, both with an 8px margin.
         function position(el, a) {
-          const rect = a.getBoundingClientRect();
-          const vw = innerWidth;
-          const vh = innerHeight;
-          const maxW = Math.min(340, vw - 16);
-          el.style.width = maxW + "px";
-          const ph = el.offsetHeight;
-          const pw = el.offsetWidth;
-          const gap = 8;
-          let top = rect.bottom + gap;
-          if (top + ph > vh - 8) {
-            const above = rect.top - gap - ph;
-            if (above >= 8) top = above;
-          }
-          let left = rect.left;
-          if (left + pw > vw - 8) left = vw - 8 - pw;
-          if (left < 8) left = 8;
-          el.style.top = top + scrollY + "px";
-          el.style.left = left + scrollX + "px";
+          el.style.width = Math.min(340, innerWidth - 16) + "px";
+          computePosition(a, el, {
+            placement: "bottom-start",
+            strategy: "absolute",
+            middleware: [offset(8), flip({ padding: 8 }), shift({ padding: 8 })],
+          }).then(({ x, y }) => {
+            if (currentAnchor !== a) return;
+            el.style.left = x + "px";
+            el.style.top = y + "px";
+            el.style.visibility = "";
+          });
         }
 
         document.addEventListener("mouseover", (e) => {
