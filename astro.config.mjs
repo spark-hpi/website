@@ -2,7 +2,6 @@
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import "dotenv/config";
-import rehypeHighlight from "rehype-highlight";
 import { unified } from "@astrojs/markdown-remark";
 import { loadContent } from "./src/lib/load-content.ts";
 import {
@@ -38,8 +37,10 @@ import {
  *  - remark/rehype plugins go through markdown.processor: unified({...}) since
  *    markdown.remarkPlugins/rehypePlugins are deprecated in Astro 6.
  *  - smartypants: false  — keep straight quotes/dashes (matches the old pipeline).
- *  - syntaxHighlight: false + rehypeHighlight — we keep highlight.js (`.hljs`
- *    spans) so the copy button (`pre > code.hljs`) and theme CSS keep working.
+ *  - syntaxHighlight: shiki with BOTH github themes and defaultColor: false, so
+ *    every token carries --shiki-light/--shiki-dark and global.css picks the side
+ *    that matches the active theme. That replaces a hand-pasted highlight.js
+ *    stylesheet; the copy button keys off `pre.astro-code > code`.
  */
 
 const CONTENT_PATH = process.env.CONTENT_PATH;
@@ -92,7 +93,13 @@ export default defineConfig({
   site: "https://spark-hpi.de",
   integrations: [sitemap(), wikilinkReport()],
   markdown: {
-    syntaxHighlight: false,
+    syntaxHighlight: "shiki",
+    shikiConfig: {
+      themes: { light: "github-light", dark: "github-dark" },
+      // No default color: emit both themes as CSS variables and let global.css
+      // choose, so a theme switch needs no re-render.
+      defaultColor: false,
+    },
     processor: unified({
       smartypants: false,
       remarkPlugins: [remarkCallouts, [remarkWikilinks, { resolver }]],
@@ -101,7 +108,6 @@ export default defineConfig({
         rehypeWrapTables,
         rehypeImagePaths,
         [rehypeLinkPreviewKeys, { resolvePageBase }],
-        [rehypeHighlight, { detect: true }],
       ],
     }),
   },

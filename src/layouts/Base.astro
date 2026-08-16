@@ -240,7 +240,7 @@ const previewJson = JSON.stringify(previewMap)
     <script is:inline>
       (() => {
         const attach = () => {
-          const blocks = document.querySelectorAll("pre > code.hljs");
+          const blocks = document.querySelectorAll("pre.astro-code > code");
           for (const code of blocks) {
             const pre = code.parentElement;
             if (!pre || pre.parentElement?.classList.contains("code-block"))
